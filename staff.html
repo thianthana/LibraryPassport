@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CMU Library — Student App</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0"/>
+<style>
+:root{
+  --pri:#4A1270;--pri-50:#F8F1FD;--pri-100:#EEE0FA;--pri-200:#D9BAF3;--pri-300:#B880E3;--pri-400:#8B44C8;--pri-700:#350D52;
+  --gold:#D4A147;--gold-lt:#FDF6E8;--gold-br:#F5C842;
+  --grn:#22C55E;--grn-bg:#DCFCE7;--red:#EF4444;--red-bg:#FEE2E2;--blu:#3B82F6;--blu-bg:#DBEAFE;--amb:#F59E0B;--amb-bg:#FEF3C7;
+  --bg:#F3F1F6;--sf:#FFFFFF;--tx:#18181B;--tx2:#52525B;--tx3:#A1A1AA;
+  --bd:rgba(0,0,0,0.06);--bds:rgba(0,0,0,0.1);
+  --sh-xs:0 1px 2px rgba(0,0,0,0.04);--sh-sm:0 1px 3px rgba(0,0,0,0.05),0 4px 8px rgba(0,0,0,0.04);
+  --sh-md:0 2px 8px rgba(0,0,0,0.04),0 8px 20px rgba(0,0,0,0.06);--sh-lg:0 4px 12px rgba(0,0,0,0.04),0 20px 40px rgba(0,0,0,0.08);
+  --sh-gold:0 4px 16px rgba(212,161,71,0.25);--sh-pri:0 4px 16px rgba(74,18,112,0.25);
+  --r-xs:8px;--r-sm:12px;--r-md:16px;--r-lg:20px;--r-xl:24px;--r-full:999px;
+  --safe-b:env(safe-area-inset-bottom,16px);--dock-h:72px;
+  --ease:cubic-bezier(0.16,1,0.3,1);--ease-b:cubic-bezier(0.34,1.56,0.64,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans Thai',-apple-system,sans-serif;background:#E8E6EB;color:var(--tx);display:flex;justify-content:center;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.app{width:100%;max-width:430px;min-height:100vh;background:var(--bg);position:relative;box-shadow:0 0 80px rgba(0,0,0,0.08)}
+.material-symbols-rounded{display:inline-block;vertical-align:middle;line-height:1}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0.9);opacity:0}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes fadeOut{to{opacity:0;transform:translate(-50%,-70%) scale(1.2)}}
+
+.page{display:none;padding-bottom:calc(var(--dock-h)+var(--safe-b)+24px);min-height:100vh;animation:fadeIn .4s var(--ease)}.page.active{display:block}
+.hidden{display:none!important}
+
+/* ═══ SHARED ═══ */
+.hdr{padding:14px 20px 12px;position:relative}.hdr-c{text-align:center}.hdr-l{text-align:left;padding-top:48px}
+.hdr h1{font-size:21px;font-weight:900;letter-spacing:-0.02em;color:var(--pri);display:flex;align-items:center;gap:6px}.hdr-c h1{justify-content:center}
+.hdr .sub{font-size:12.5px;color:var(--tx3);font-weight:500;margin-top:2px}
+.hdr .hero{color:var(--gold);filter:drop-shadow(0 3px 6px rgba(212,161,71,0.3));margin-bottom:4px}
+.ib{position:absolute;top:14px;width:38px;height:38px;border-radius:12px;background:var(--sf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-xs);cursor:pointer;transition:transform .15s var(--ease);color:var(--tx2)}
+.ib .material-symbols-rounded{font-size:20px}.ib:active{transform:scale(0.9)}.ib.l{left:16px}.ib.r{right:16px}
+.ib .dot{position:absolute;top:-1px;right:-1px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--sf)}
+
+.pp{display:inline-flex;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-full);padding:8px 20px;box-shadow:var(--sh-sm)}
+.pp .lbl{font-size:12.5px;font-weight:600;color:var(--tx2)}.pp .val{font-size:22px;font-weight:900;color:var(--pri);letter-spacing:-0.03em}
+.pf{position:absolute;right:20px;top:18px;display:flex;align-items:center;gap:6px;background:var(--gold-lt);border:1px solid rgba(212,161,71,0.2);border-radius:var(--r-full);padding:6px 14px;box-shadow:var(--sh-xs)}
+.pf .val{font-size:15px;font-weight:800;color:var(--gold)}.pf .sub{font-size:9px;color:var(--tx3);font-weight:600}
+
+/* Toast */
+#tb{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9999;width:calc(100% - 32px);max-width:396px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:rgba(255,255,255,0.92);backdrop-filter:blur(16px) saturate(200%);-webkit-backdrop-filter:blur(16px) saturate(200%);border:1px solid var(--bd);border-radius:var(--r-sm);padding:12px 16px;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:10px;animation:popIn .35s var(--ease);pointer-events:auto;border-left:4px solid var(--grn)}
+.toast.err{border-left-color:var(--red)}.toast .ti{font-size:22px}.toast .ti.ok{color:var(--grn)}.toast .ti.er{color:var(--red)}
+.toast .tm{font-size:13px;font-weight:600;flex:1}.toast .tc{font-size:18px;color:var(--tx3);cursor:pointer;padding:4px}
+.pts-anim{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:8000;pointer-events:none;font-size:48px;font-weight:900;color:var(--gold);text-shadow:0 2px 12px rgba(212,161,71,0.4);animation:popIn .5s var(--ease-b) forwards,fadeOut .4s 1s ease forwards}
+
+/* ═══ LEADERBOARD ═══ */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:20px 16px 8px}
+.pod{display:flex;flex-direction:column;align-items:center;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-md);padding:14px 8px 16px;box-shadow:var(--sh-sm);transition:transform .2s var(--ease)}.pod:active{transform:scale(0.97)}
+.pod.p1{width:38%;border-color:var(--gold);background:linear-gradient(180deg,#FFFDF5,#FFF 50%);box-shadow:var(--sh-gold);transform:translateY(-14px);z-index:2}
+.pod.p2{width:30%;border-top:3px solid #CBD5E1}.pod.p3{width:30%;border-top:3px solid var(--gold-br)}
+.pod .cr{margin-bottom:6px}.pod.p1 .cr{color:var(--gold);font-size:32px;animation:float 3s ease-in-out infinite}.pod.p2 .cr{color:#94A3B8;font-size:24px}.pod.p3 .cr{color:var(--amb);font-size:24px}
+.pod .av{width:52px;height:52px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:4px}
+.pod.p1 .av{width:68px;height:68px;border-radius:var(--r-md);background:linear-gradient(135deg,var(--gold-br),var(--gold));color:#fff;font-size:32px;box-shadow:var(--sh-gold)}
+.pod.p2 .av{background:var(--pri-50);color:var(--pri);font-size:26px}.pod.p3 .av{background:var(--amb-bg);color:var(--amb);font-size:26px}
+.pod .rk{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);min-width:22px;height:22px;padding:0 4px;border-radius:7px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;background:var(--sf);border:1px solid var(--bd);box-shadow:var(--sh-xs)}
+.pod.p1 .rk{background:var(--tx);color:#fff;border:none;min-width:26px;height:26px;font-size:12px}
+.pod .nm{font-size:12px;font-weight:700;margin-top:10px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pod .sc{font-size:15px;font-weight:900;color:var(--pri)}.pod.p1 .sc{font-size:17px;color:var(--gold)}.pod .su{font-size:10px;color:var(--tx3)}
+
+.rl{padding:0 20px;margin-top:14px}
+.rlh{display:flex;justify-content:space-between;padding:6px 14px;font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--bd);margin-bottom:8px}
+.rr{display:flex;align-items:center;padding:12px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-sm);margin-bottom:8px;box-shadow:var(--sh-xs);transition:transform .12s var(--ease)}.rr:active{transform:scale(0.98)}
+.rr .num{width:28px;font-size:13px;font-weight:800;color:var(--tx3);text-align:center}
+.rr .av{width:38px;height:38px;border-radius:10px;background:var(--bg);margin:0 10px;display:flex;align-items:center;justify-content:center;color:var(--tx2);border:1px solid var(--bd)}
+.rr .nm{flex:1;font-size:13.5px;font-weight:600}.rr .sc{font-size:13.5px;font-weight:800}
+
+.mr{margin:14px 20px;padding:14px 16px;background:var(--pri-50);border:1px solid var(--pri-200);border-radius:var(--r-md);display:flex;align-items:center;box-shadow:var(--sh-sm);animation:popIn .5s var(--ease) .3s both}
+.mr .rc{text-align:center;margin-right:10px}.mr .rc .lbl{font-size:9px;font-weight:700;color:var(--pri-400);text-transform:uppercase;letter-spacing:.05em}.mr .rc .num{font-size:22px;font-weight:900;color:var(--pri)}
+.mr .av{width:38px;height:38px;border-radius:10px;background:var(--pri);color:#fff;margin-right:10px;display:flex;align-items:center;justify-content:center}
+.mr .nm{flex:1;font-size:14px;font-weight:700;color:var(--pri)}.mr .sc{font-size:17px;font-weight:900;color:var(--pri);margin-left:auto}
+
+.cta{margin:10px 20px 16px;padding:14px 18px;background:linear-gradient(135deg,#7C3AED,var(--pri) 50%,var(--pri-700));border-radius:var(--r-lg);display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--sh-pri);transition:transform .15s var(--ease);position:relative;overflow:hidden}
+.cta:active{transform:scale(0.97)}.cta::after{content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);animation:shimmer 4s infinite}
+.cta .ci{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.cta .ct{color:#fff;flex:1}.cta .ct .m{font-size:15px;font-weight:800}.cta .ct .s{font-size:11.5px;opacity:0.8}.cta .ca{color:rgba(255,255,255,0.7)}
+
+/* ═══ MISSIONS ═══ */
+.mt{display:flex;gap:6px;padding:4px 20px 14px;overflow-x:auto;scrollbar-width:none}.mt::-webkit-scrollbar{display:none}
+.mtb{padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--tx2);border:1px solid var(--bd);background:var(--sf);border-radius:var(--r-full);cursor:pointer;transition:all .2s var(--ease);white-space:nowrap;display:flex;align-items:center;gap:5px;box-shadow:var(--sh-xs);font-family:inherit}
+.mtb .material-symbols-rounded{font-size:16px}.mtb.active{background:var(--tx);color:#fff;border-color:var(--tx)}.mtb:active{transform:scale(0.95)}
+.msh{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 10px}.msh .t{font-size:15px;font-weight:800}.msh .s{font-size:11.5px;color:var(--tx3)}
+
+.mc{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-md);box-shadow:var(--sh-xs);transition:transform .12s var(--ease)}
+.mc:active{transform:scale(0.98)}.mc.hl{border-color:var(--gold);background:linear-gradient(135deg,#FFFEF5,#FFF)}.mc.done-c{opacity:0.6}
+.mc .ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.mc .ic .material-symbols-rounded{font-size:26px}
+.ip{background:var(--pri-50);color:var(--pri)}.ir{background:var(--red-bg);color:var(--red)}.ib2{background:var(--blu-bg);color:var(--blu)}.ig{background:var(--grn-bg);color:var(--grn)}.ia{background:var(--amb-bg);color:var(--amb)}
+.mc .inf{flex:1;min-width:0}.mc .inf .t{font-size:13.5px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mc .inf .d{font-size:11.5px;color:var(--tx3);line-height:1.4}
+.mc .inf .loc{font-size:10.5px;color:var(--pri);font-weight:600;margin-top:4px;display:flex;align-items:center;gap:3px}
+.mc .rw{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;justify-content:center}
+.mc .ps{font-size:14px;font-weight:800;color:var(--gold);display:flex;align-items:center;gap:2px}
+.ab{padding:7px 14px;border-radius:var(--r-xs);border:none;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .12s var(--ease);font-family:inherit;background:var(--tx);color:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.ab:active{transform:scale(0.93)}.ab.dn{background:var(--bg);color:var(--tx3);border:1px solid var(--bd);box-shadow:none;pointer-events:none}.ab.pb{background:var(--pri)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px}
+.empty-state .material-symbols-rounded{font-size:48px;display:block;margin:0 auto 12px;color:var(--bd)}
+
+/* Streak */
+.sb{margin:20px;padding:18px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-md);box-shadow:var(--sh-sm)}
+.sbh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}.sbh .t{font-size:14px;font-weight:800}.sbh .s{font-size:11px;color:var(--tx3)}
+.stk{display:flex;justify-content:space-between;position:relative}
+.stk .ln{position:absolute;top:15px;left:16px;right:16px;height:2px;background:var(--bd);z-index:0}
+.stk .lf{position:absolute;top:15px;left:16px;height:2px;background:var(--pri);z-index:0}
+.sd{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:1}
+.sdt{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--sf);border:2px solid var(--bd);color:var(--tx3)}
+.sdt.ok{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 3px 8px rgba(74,18,112,0.2)}
+.sdt.gi{border-color:var(--gold);background:var(--gold-lt);color:var(--gold)}
+.sd .lb{font-size:9px;font-weight:600;color:var(--tx2)}
+.sbn{margin-top:16px;text-align:center;font-size:11.5px;font-weight:600;color:var(--tx2);background:var(--pri-50);padding:10px;border-radius:var(--r-xs);border:1px dashed var(--pri-200)}.sbn strong{color:var(--gold)}
+
+/* ═══ HISTORY ═══ */
+.hs{display:flex;gap:10px;margin:0 20px 14px}
+.hst{flex:1;padding:14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-md);box-shadow:var(--sh-xs)}
+.hst .tp{display:flex;align-items:center;gap:8px;margin-bottom:8px}.hst .hic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.hst .lbl{font-size:10.5px;font-weight:600;color:var(--tx3)}.hst .vl{font-size:20px;font-weight:900}
+.hd{padding:6px 24px;font-size:12px;font-weight:700;color:var(--tx3)}
+.hi{display:flex;align-items:center;gap:12px;margin:0 20px 8px;padding:14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-sm);box-shadow:var(--sh-xs);transition:transform .12s var(--ease)}.hi:active{transform:scale(0.98)}
+.hi .tm{text-align:center;flex-shrink:0;width:40px;border-right:1px dashed var(--bd);padding-right:10px}
+.hi .tm .material-symbols-rounded{font-size:16px;color:var(--tx3)}.hi .tm .tx{font-size:10.5px;font-weight:700;color:var(--tx2);margin-top:1px}
+.hi .hc{width:36px;height:36px;border-radius:10px;background:var(--pri-50);display:flex;align-items:center;justify-content:center;flex-shrink:0}.hi .hc .material-symbols-rounded{font-size:20px;color:var(--pri)}
+.hi .inf{flex:1;min-width:0}.hi .inf .pl{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hi .inf .lc{font-size:11px;color:var(--tx3);margin-top:1px}
+.hi .inf .tg{display:inline-block;padding:2px 7px;margin-top:4px;background:var(--pri-50);border-radius:4px;font-size:10px;font-weight:600;color:var(--pri)}
+.hi .ps{text-align:right;flex-shrink:0}.hi .ps .v{font-size:14px;font-weight:800;color:var(--grn)}
+.hn{margin:14px 20px;padding:10px 14px;background:var(--pri-50);border-radius:var(--r-xs);font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:6px}
+
+/* ═══ REWARDS ═══ */
+.db{display:flex;gap:10px;margin:0 20px 14px;padding:14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-md)}
+.db .it{flex:1;display:flex;align-items:center;gap:10px}.db .it:first-child{border-right:1px solid var(--bd);padding-right:10px}
+.db .it .lbl{font-size:10.5px;color:var(--tx3);font-weight:600}.db .it .vl{font-size:17px;font-weight:900}
+.rwc{margin:0 20px 14px;padding:18px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-md);box-shadow:var(--sh-sm)}.rwc.g1{border-color:var(--gold);box-shadow:var(--sh-gold)}
+.rwc .rwh{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--bg)}
+.rwc .bd{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
+.rwc.g1 .bd{background:linear-gradient(135deg,var(--gold-br),var(--gold))}.rwc.g2 .bd{background:linear-gradient(135deg,#CBD5E1,#94A3B8)}.rwc.g3 .bd{background:linear-gradient(135deg,#FDE68A,#D97706)}
+.rwc .rt{font-size:14px;font-weight:800;margin-bottom:2px}.rwc .rs{font-size:11.5px;color:var(--tx3)}
+.rwc .ri{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;margin-bottom:6px}.rwc .ri .material-symbols-rounded{font-size:16px;color:var(--tx3)}.rwc .ri .n{font-weight:700}
+
+/* ═══ PROFILE ═══ */
+.pc2{margin:0 20px 18px;padding:30px 18px 22px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r-md);box-shadow:var(--sh-md);text-align:center;position:relative;overflow:hidden}
+.pc2::before{content:'';position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(135deg,#7C3AED,var(--pri) 60%,var(--pri-700))}
+.pc2 .av{width:80px;height:80px;border-radius:24px;background:var(--sf);margin:0 auto 12px;position:relative;z-index:1;border:3px solid var(--sf);display:flex;align-items:center;justify-content:center;color:var(--pri);box-shadow:var(--sh-sm)}.pc2 .av .material-symbols-rounded{font-size:36px}
+.pc2 .nm{font-size:17px;font-weight:900;position:relative;z-index:1}.pc2 .mo{font-size:12px;font-weight:600;color:var(--pri);margin-top:3px}
+.pc2 .inf{margin-top:20px;border-top:1px solid var(--bg);padding-top:14px;text-align:left}
+.pc2 .rw2{display:flex;align-items:center;padding:10px 14px;border-bottom:1px dashed var(--bd)}.pc2 .rw2:last-child{border-bottom:none}
+.pc2 .rw2 .ri2{width:30px;height:30px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0}.pc2 .rw2 .ri2 .material-symbols-rounded{font-size:16px;color:var(--tx3)}
+.pc2 .rw2 .rl2{font-size:12px;font-weight:600;color:var(--tx2);flex:1}.pc2 .rw2 .rv2{font-size:12.5px;font-weight:700}
+.qb{margin:0 20px 20px;padding:22px 18px;background:var(--sf);border:1px dashed var(--bds);border-radius:var(--r-md);text-align:center}
+.qb .qt{font-size:14px;font-weight:800;color:var(--pri);display:flex;align-items:center;justify-content:center;gap:6px}.qb .qs{font-size:12px;color:var(--tx3);margin-top:2px}
+.qw{margin:14px auto;width:150px;height:150px;background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;padding:10px}.qw canvas{width:100%!important;height:100%!important}
+.qb .nt{margin-top:10px;padding:8px 12px;background:var(--gold-lt);border-radius:var(--r-xs);font-size:11px;color:var(--tx2);display:flex;align-items:center;justify-content:center;gap:4px}
+
+/* ═══ DOCK ═══ */
+.dw{position:fixed;bottom:var(--safe-b);left:0;width:100%;display:flex;justify-content:center;pointer-events:none;z-index:100}
+.dk{background:rgba(255,255,255,0.82);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.5);box-shadow:0 8px 32px rgba(0,0,0,0.08);border-radius:100px;display:flex;padding:5px 6px;gap:1px;pointer-events:auto}
+.dk .nv{display:flex;flex-direction:column;align-items:center;justify-content:center;width:58px;height:52px;border-radius:18px;border:none;background:transparent;color:var(--tx3);cursor:pointer;transition:all .2s var(--ease);position:relative;font-family:inherit}
+.dk .nv .ni{font-size:23px;margin-bottom:1px;transition:transform .2s var(--ease)}.dk .nv .nl{font-size:9px;font-weight:700;opacity:0;transform:translateY(3px);transition:all .2s var(--ease);position:absolute;bottom:6px}
+.dk .nv.active{color:var(--pri)}.dk .nv.active .ni{transform:translateY(-5px);font-variation-settings:'FILL' 1}.dk .nv.active .nl{opacity:1;transform:translateY(0)}
+.dk .nv.ct{margin:-14px 3px 0;width:52px;height:52px;background:var(--pri);color:#fff;border-radius:50%;box-shadow:0 6px 18px rgba(74,18,112,0.3);border:3px solid var(--bg)}
+.dk .nv.ct.active{transform:scale(1.06)}.dk .nv.ct .ni{margin:0;font-size:26px;transform:none!important}.dk .nv.ct .nl{display:none}
+
+/* ═══ MODAL ═══ */
+.ov{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center}.ov.show{display:flex}
+.mdl{background:var(--sf);border-radius:var(--r-xl);padding:28px 22px;width:88%;max-width:360px;text-align:center;position:relative;box-shadow:var(--sh-lg);border:1px solid var(--bd);animation:popIn .35s var(--ease)}
+.mdl .xb{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10}.mdl .xb .material-symbols-rounded{font-size:18px;color:var(--tx2)}.mdl .xb:active{transform:scale(0.85)}
+.mdl .mt2{font-size:17px;font-weight:900;margin-bottom:3px}.mdl .ms{font-size:12px;color:var(--tx3)}
+.mdl .mqr{margin:18px auto;padding:10px;background:#fff;border:1px solid var(--bd);border-radius:var(--r-md);display:inline-block}.mdl .mqr canvas{width:150px!important;height:150px!important}
+.mdl .mn{font-size:14px;font-weight:700;margin-top:6px}.mdl .mi{font-size:11.5px;color:var(--tx3)}
+.mdl .mnt{margin-top:12px;padding:8px 12px;background:var(--gold-lt);border-radius:var(--r-xs);font-size:11px;color:var(--tx2)}
+</style>
+</head>
+<body>
+<div id="tb"></div>
+<div class="app">
+
+<!-- LEADERBOARD -->
+<div class="page active" id="page-leaderboard">
+  <div class="hdr hdr-c"><div class="hero"><span class="material-symbols-rounded" style="font-size:44px">workspace_premium</span></div><h1>จัดอันดับกิจกรรม</h1><p class="sub">สะสมคะแนนต่อเนื่อง เลื่อนอันดับของคุณ</p></div>
+  <div style="text-align:center;margin:10px 0"><div class="pp"><span class="material-symbols-rounded" style="font-size:22px;color:var(--gold)">stars</span><span class="lbl">คะแนนของคุณ</span><span class="val gp">2,560</span><span style="font-size:11px;color:var(--tx3)">แต้ม</span></div></div>
+  <div class="podium">
+    <div class="pod p2"><span class="material-symbols-rounded cr">military_tech</span><div class="av"><span class="material-symbols-rounded">face_3</span><div class="rk">2</div></div><div class="nm">ปรียานุช</div><div class="sc">9,850</div><div class="su">แต้ม</div></div>
+    <div class="pod p1"><span class="material-symbols-rounded cr">military_tech</span><div class="av"><span class="material-symbols-rounded">person</span><div class="rk">1</div></div><div class="nm gns">ธนศรัณกร</div><div class="sc">12,540</div><div class="su">แต้ม</div></div>
+    <div class="pod p3"><span class="material-symbols-rounded cr">military_tech</span><div class="av"><span class="material-symbols-rounded">face_6</span><div class="rk">3</div></div><div class="nm">กิตติพงศ์</div><div class="sc">7,230</div><div class="su">แต้ม</div></div>
+  </div>
+  <div class="rl"><div class="rlh"><span>อันดับ</span><span>คะแนนสะสม</span></div>
+    <div class="rr"><div class="num">4</div><div class="av"><span class="material-symbols-rounded">face_4</span></div><div class="nm">สุรีย์พร</div><div class="sc">5,680</div></div>
+    <div class="rr"><div class="num">5</div><div class="av"><span class="material-symbols-rounded">face</span></div><div class="nm">ณัฐพล</div><div class="sc">4,360</div></div>
+    <div class="rr"><div class="num">6</div><div class="av"><span class="material-symbols-rounded">face_5</span></div><div class="nm">วราภรณ์</div><div class="sc">3,210</div></div>
+  </div>
+  <div class="mr"><div class="rc"><div class="lbl">อันดับ</div><div class="num">12</div></div><div class="av"><span class="material-symbols-rounded">person</span></div><div class="nm">คุณ</div><div class="sc gp">2,560</div></div>
+  <div class="cta" onclick="showQR('สแกนรับคะแนน','แสดง QR ให้เจ้าหน้าที่สแกนเพื่อรับคะแนน')"><div class="ci"><span class="material-symbols-rounded">qr_code_scanner</span></div><div class="ct"><div class="m">สแกนรับคะแนน</div><div class="s">แสดง QR ให้เจ้าหน้าที่สแกน</div></div><div class="ca"><span class="material-symbols-rounded">arrow_forward</span></div></div>
+</div>
+
+<!-- MISSIONS -->
+<div class="page" id="page-missions">
+  <div class="hdr hdr-l" style="position:relative"><h1>ภารกิจ <span class="material-symbols-rounded" style="font-size:20px;color:var(--gold)">auto_awesome</span></h1><p class="sub">กดรับภารกิจ → แสดง QR ให้เจ้าหน้าที่สแกน</p><div class="pf"><span class="material-symbols-rounded" style="font-size:16px;color:var(--gold)">stars</span><div><div class="val gp">2,560</div><div class="sub">แต้ม</div></div></div></div>
+  <div class="mt">
+    <button class="mtb active" data-tab="all"><span class="material-symbols-rounded">content_paste</span> ทั้งหมด</button>
+    <button class="mtb" data-tab="done"><span class="material-symbols-rounded">check_circle</span> สำเร็จแล้ว</button>
+  </div>
+  <div id="tab-all"><div class="msh"><div><div class="t">ภารกิจที่เปิดรับ</div><div class="s">กดปุ่ม "รับภารกิจ" แล้วแสดง QR ให้เจ้าหน้าที่</div></div></div><div id="mission-list"></div></div>
+  <div id="tab-done" class="hidden"><div class="msh"><div><div class="t">ภารกิจที่สำเร็จแล้ว</div></div></div><div id="done-list"></div></div>
+  <div class="sb"><div class="sbh"><div><div class="t">Streak Progress</div><div class="s">ทำภารกิจติดต่อกัน รับรางวัลพิเศษ!</div></div><span class="material-symbols-rounded" style="font-size:30px;color:var(--gold)">card_giftcard</span></div>
+    <div class="stk"><div class="ln"></div><div class="lf" style="width:38%"></div>
+      <div class="sd"><div class="sdt ok"><span class="material-symbols-rounded" style="font-size:14px">check</span></div><span class="lb">วัน 1</span></div><div class="sd"><div class="sdt ok"><span class="material-symbols-rounded" style="font-size:14px">check</span></div><span class="lb">วัน 2</span></div><div class="sd"><div class="sdt ok"><span class="material-symbols-rounded" style="font-size:14px">check</span></div><span class="lb">วัน 3</span></div><div class="sd"><div class="sdt gi"><span class="material-symbols-rounded" style="font-size:14px">redeem</span></div><span class="lb">วัน 4</span></div><div class="sd"><div class="sdt">5</div><span class="lb">วัน 5</span></div><div class="sd"><div class="sdt">6</div><span class="lb">วัน 6</span></div><div class="sd"><div class="sdt gi"><span class="material-symbols-rounded" style="font-size:14px">redeem</span></div><span class="lb">วัน 7</span></div>
+    </div><div class="sbn"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:middle">info</span> ทำครบ 7 วัน รับโบนัสพิเศษ <strong>+100 แต้ม</strong></div></div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="hdr hdr-l"><h1>ประวัติกิจกรรม</h1><p class="sub">รายการสะสมคะแนนย้อนหลัง</p></div>
+  <div class="hs"><div class="hst"><div class="tp"><div class="hic" style="background:var(--pri-50);color:var(--pri)"><span class="material-symbols-rounded" style="font-size:18px">pin_drop</span></div><div class="lbl">เข้าร่วมทั้งหมด</div></div><div class="vl gv">0 <span style="font-size:11px;color:var(--tx3)">ครั้ง</span></div></div><div class="hst"><div class="tp"><div class="hic" style="background:var(--gold-lt);color:var(--gold)"><span class="material-symbols-rounded" style="font-size:18px">stars</span></div><div class="lbl">คะแนนรวม</div></div><div class="vl gp">2,560</div></div></div>
+  <div id="hl"><div class="hd">ประวัติล่าสุด</div></div>
+  <div class="hn"><span class="material-symbols-rounded" style="font-size:16px">info</span> ข้อมูลอัปเดตอัตโนมัติเมื่อเจ้าหน้าที่สแกน QR</div>
+</div>
+
+<!-- REWARDS -->
+<div class="page" id="page-rewards">
+  <div class="hdr hdr-l"><h1>แลกของรางวัล</h1><p class="sub">นำคะแนนมาแลกสิทธิพิเศษ</p></div>
+  <div class="db"><div class="it"><span class="material-symbols-rounded" style="color:var(--gold)">stars</span><div><div class="lbl">คะแนนที่ใช้ได้</div><div class="vl gp">2,560</div></div></div><div class="it"><span class="material-symbols-rounded" style="color:var(--pri)">military_tech</span><div><div class="lbl">อันดับปัจจุบัน</div><div class="vl">12</div></div></div></div>
+  <div class="rwc g1"><div class="rwh"><div class="bd">1</div><div><div class="rt">รางวัลยอดนักอ่าน ประจำปี</div><div class="rs">คะแนนสูงสุดอันดับ 1</div></div></div><div class="ri"><span class="material-symbols-rounded">tablet_mac</span><div><div class="n">iPad Air (256GB)</div></div></div><div class="ri"><span class="material-symbols-rounded">workspace_premium</span><div class="n">เกียรติบัตรเชิดชูเกียรติ</div></div></div>
+  <div class="rwc g2"><div class="rwh"><div class="bd">2</div><div><div class="rt">รางวัลที่ 2 — Kindle Paperwhite</div><div class="rs">คะแนนสูงสุดอันดับ 2</div></div></div></div>
+  <div class="rwc g3"><div class="rwh"><div class="bd">3</div><div><div class="rt">รางวัลที่ 3 — เสื้อแจ็คเก็ต CMU Library</div><div class="rs">คะแนนสูงสุดอันดับ 3</div></div></div></div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+  <div class="hdr hdr-l"><h1>โปรไฟล์นักศึกษา</h1><p class="sub">ข้อมูลส่วนตัวของคุณ</p></div>
+  <div class="pc2"><div class="av"><span class="material-symbols-rounded">person</span></div><div class="nm gn">ธนศรัณกร พิชญนันทกุล</div><div class="mo">CMU Library Member</div><div class="inf"><div class="rw2"><div class="ri2"><span class="material-symbols-rounded">badge</span></div><div class="rl2">รหัสสมาชิก</div><div class="rv2">LIB6701234567</div></div><div class="rw2"><div class="ri2"><span class="material-symbols-rounded">school</span></div><div class="rl2">คณะ / สังกัด</div><div class="rv2">บริหารธุรกิจ (MBA)</div></div><div class="rw2"><div class="ri2"><span class="material-symbols-rounded">mail</span></div><div class="rl2">อีเมล</div><div class="rv2" style="font-size:11.5px">thanasarankorn.p@cmu.ac.th</div></div></div></div>
+  <div class="qb"><div class="qt"><span class="material-symbols-rounded">qr_code_2</span> คิวอาร์โค้ดประจำตัว</div><div class="qs">แสดง QR นี้ให้เจ้าหน้าที่เพื่อรับคะแนน</div><div class="qw" id="pqr"></div><div class="nt"><span class="material-symbols-rounded" style="font-size:14px">info</span> ใช้สำหรับสะสมแต้มเฉพาะที่ CMU Library</div></div>
+</div>
+
+<!-- DOCK -->
+<div class="dw"><nav class="dk">
+  <button class="nv" data-page="missions"><span class="material-symbols-rounded ni">task_alt</span><span class="nl">ภารกิจ</span></button>
+  <button class="nv" data-page="history"><span class="material-symbols-rounded ni">history</span><span class="nl">ประวัติ</span></button>
+  <button class="nv ct active" data-page="leaderboard"><span class="material-symbols-rounded ni">social_leaderboard</span><span class="nl">อันดับ</span></button>
+  <button class="nv" data-page="rewards"><span class="material-symbols-rounded ni">card_giftcard</span><span class="nl">รางวัล</span></button>
+  <button class="nv" data-page="profile"><span class="material-symbols-rounded ni">person</span><span class="nl">โปรไฟล์</span></button>
+</nav></div>
+
+<!-- QR MODAL -->
+<div class="ov" id="qrp"><div class="mdl"><button class="xb" onclick="hov('qrp')"><span class="material-symbols-rounded">close</span></button><div style="color:var(--pri);margin-bottom:6px"><span class="material-symbols-rounded" style="font-size:44px">qr_code_scanner</span></div><div class="mt2" id="qr-title">สแกนรับคะแนน</div><div class="ms" id="qr-sub">แสดง QR ให้เจ้าหน้าที่สแกน</div><div class="mqr" id="pqr2"></div><div class="mn gn">ธนศรัณกร พิชญนันทกุล</div><div class="mi">รหัสสมาชิก: LIB6701234567</div><div class="mnt"><span class="material-symbols-rounded" style="font-size:13px;vertical-align:middle;margin-right:3px">security</span> แสดง QR นี้ให้เจ้าหน้าที่สแกน</div></div></div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const MK='cmu_missions', HK='cmu_history', PK='cmu_user_pts';
+function ld(k,f){try{return JSON.parse(localStorage.getItem(k))||f}catch{return f}}
+function sv(k,d){localStorage.setItem(k,JSON.stringify(d))}
+const defM=[
+  {id:'m1',name:'ชมนิทรรศการ คณะวิจิตรศิลป์',desc:'เช็คอินเข้าชมนิทรรศการศิลปะนิพนธ์',loc:'คณะวิจิตรศิลป์ มช.',icon:'palette',pts:150},
+  {id:'m2',name:'ห้องสมุด คณะมนุษยศาสตร์',desc:'เยี่ยมชมและค้นคว้าหนังสือหมวดประวัติศาสตร์',loc:'คณะมนุษยศาสตร์ มช.',icon:'history_edu',pts:100},
+  {id:'m3',name:'ยืมหนังสือผ่าน Kiosk',desc:'ทำรายการยืมหนังสืออัตโนมัติ',loc:'หอสมุดมหาวิทยาลัย',icon:'local_library',pts:50},
+  {id:'m4',name:'โครงการ Green Library',desc:'คัดแยกขยะถูกประเภท หรือ บริจาคหนังสือ',loc:'หอสมุดกลาง มช.',icon:'eco',pts:50},
+  {id:'m5',name:'งานสัปดาห์ห้องสมุด มช.',desc:'เข้าร่วมกิจกรรมพิเศษ 14-18 มิ.ย. 2569',loc:'ลานกิจกรรม ชั้น 1',icon:'celebration',pts:500},
+];
+if(!localStorage.getItem(MK)) sv(MK,defM);
+
+let S={pts:ld(PK,2560),vis:ld(HK,[]).length,name:'ธนศรัณกร พิชญนันทกุล',completed:ld('cmu_completed',[])};
+const fmt=n=>n.toLocaleString('en-US');
+const icMap={palette:'ir',local_library:'ip',history_edu:'ib2',eco:'ig',groups:'ip',celebration:'ia',science:'ib2',sports_esports:'ir'};
+
+function sync(){
+  document.querySelectorAll('.gp').forEach(e=>e.textContent=fmt(S.pts));
+  document.querySelectorAll('.gn').forEach(e=>e.textContent=S.name);
+  document.querySelectorAll('.gns').forEach(e=>e.textContent=S.name.split(' ')[0]);
+  document.querySelectorAll('.gv').forEach(e=>e.innerHTML=`${S.vis} <span style="font-size:11px;color:var(--tx3)">ครั้ง</span>`);
+  sv(PK,S.pts); sv('cmu_completed',S.completed);
+}
+
+function toast(m,t='ok'){const b=document.getElementById('tb'),e=document.createElement('div');e.className=`toast ${t==='err'?'err':''}`;e.innerHTML=`<span class="material-symbols-rounded ti ${t==='err'?'er':'ok'}">${t==='err'?'error':'check_circle'}</span><div class="tm">${m}</div><span class="material-symbols-rounded tc" onclick="this.parentElement.remove()">close</span>`;b.appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transform='translateY(-10px)';e.style.transition='all .3s';setTimeout(()=>e.remove(),300)},3500)}
+
+function ptsa(p){const e=document.createElement('div');e.className='pts-anim';e.textContent=`+${p}`;document.body.appendChild(e);setTimeout(()=>e.remove(),1500)}
+
+// Nav
+document.querySelectorAll('.dk .nv').forEach(b=>{b.addEventListener('click',()=>{const pg=b.dataset.page;document.querySelectorAll('.dk .nv').forEach(n=>n.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');if(p.id==='page-'+pg)p.classList.add('active')});window.scrollTo({top:0,behavior:'smooth'});if(pg==='missions')renderM();if(pg==='history')renderH()})});
+
+// Mission tabs
+document.querySelectorAll('.mtb').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.mtb').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('tab-all').classList.toggle('hidden',t.dataset.tab!=='all');document.getElementById('tab-done').classList.toggle('hidden',t.dataset.tab!=='done')})});
+
+// Render missions
+function renderM(){
+  const ms=ld(MK,[]),list=document.getElementById('mission-list'),dl=document.getElementById('done-list');
+  list.innerHTML='';dl.innerHTML='';
+  let openCount=0;
+  ms.forEach((m,i)=>{
+    const done=S.completed.includes(m.id);
+    const c=icMap[m.icon]||'ip';
+    const hl=!done&&openCount===0;
+    if(!done) openCount++;
+    const h=`<div class="mc ${hl?'hl':''} ${done?'done-c':''}" style="animation:slideUp .3s var(--ease) ${i*0.05}s both">
+      <div class="ic ${c}"><span class="material-symbols-rounded">${m.icon}</span></div>
+      <div class="inf"><div class="t" ${hl?'style="color:var(--pri)"':''}>${m.name}</div><div class="d">${m.desc}</div><div class="loc"><span class="material-symbols-rounded" style="font-size:12px">location_on</span> ${m.loc}</div></div>
+      <div class="rw"><div class="ps"><span class="material-symbols-rounded" style="font-size:15px">stars</span>+${m.pts}</div>
+      ${done?'<button class="ab dn"><span class="material-symbols-rounded" style="font-size:13px">check</span> สำเร็จแล้ว</button>'
+        :`<button class="ab ${hl?'pb':''}" onclick="acceptM('${m.id}','${m.name}',${m.pts})">รับภารกิจ</button>`}
+      </div></div>`;
+    if(done) dl.insertAdjacentHTML('beforeend',h); else list.insertAdjacentHTML('beforeend',h);
+  });
+  if(!list.innerHTML) list.innerHTML='<div class="empty-state"><span class="material-symbols-rounded">emoji_events</span>ยังไม่มีภารกิจ — รอแอดมินเพิ่มเร็วๆ นี้</div>';
+  if(!dl.innerHTML) dl.innerHTML='<div class="empty-state"><span class="material-symbols-rounded">hourglass_empty</span>ยังไม่มีภารกิจที่สำเร็จ</div>';
+}
+
+function acceptM(id,name,pts){
+  showQR(`ภารกิจ: ${name}`,`+${pts} แต้ม — แสดง QR ให้เจ้าหน้าที่สแกน`);
+}
+
+// Render history
+function renderH(){
+  const hist=ld(HK,[]);
+  S.vis=hist.length;
+  const box=document.getElementById('hl');
+  box.innerHTML='<div class="hd">ประวัติล่าสุด</div>';
+  if(!hist.length){box.innerHTML+='<div class="empty-state"><span class="material-symbols-rounded">history</span>ยังไม่มีประวัติ</div>';return}
+  hist.slice(0,20).forEach((h,i)=>{
+    box.innerHTML+=`<div class="hi" style="animation:slideUp .3s var(--ease) ${i*0.04}s both"><div class="tm"><span class="material-symbols-rounded">pin_drop</span><div class="tx">${h.time||'—'}</div></div><div class="hc"><span class="material-symbols-rounded">check_circle</span></div><div class="inf"><div class="pl">${h.title}</div><div class="lc">${h.tag||''}</div><div class="tg">+${h.pts} แต้ม</div></div><div class="ps"><div class="v">+${h.pts}</div></div></div>`;
+  });
+  sync();
+}
+
+// QR
+function mkqr(id){const el=document.getElementById(id);if(!el||el.querySelector('canvas'))return;new QRCode(el,{text:"CMU-LIB-6701234567-THANASARANKORN",width:150,height:150,colorDark:"#18181B",colorLight:"#FFFFFF",correctLevel:QRCode.CorrectLevel.H})}
+function showQR(title,sub){document.getElementById('qr-title').textContent=title||'สแกนรับคะแนน';document.getElementById('qr-sub').textContent=sub||'แสดง QR ให้เจ้าหน้าที่สแกน';sov('qrp');setTimeout(()=>mkqr('pqr2'),100)}
+function sov(id){document.getElementById(id).classList.add('show');document.body.style.overflow='hidden'}
+function hov(id){document.getElementById(id).classList.remove('show');document.body.style.overflow=''}
+document.querySelectorAll('.ov').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)hov(o.id)})});
+
+// Listen for admin adding points
+window.addEventListener('storage',e=>{
+  if(e.key===PK){S.pts=ld(PK,S.pts);sync();ptsa(50);toast('ได้รับคะแนนจากเจ้าหน้าที่!')}
+  if(e.key===HK){renderH();sync()}
+  if(e.key===MK){renderM()}
+  if(e.key==='cmu_completed'){S.completed=ld('cmu_completed',[]);renderM()}
+});
+
+window.addEventListener('load',()=>{mkqr('pqr');sync();renderM();renderH()});
+</script>
+</body>
+</html>
