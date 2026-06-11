@@ -3,654 +3,529 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CMU Library - Activity Points</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
-
+<title>CMU Library — Activity Points</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root {
-  /* CMU Modern Premium Theme */
-  --cmu-primary: #5A1E7A;
-  --cmu-secondary: #8B3EAF;
-  --cmu-light: #F8F4FA;
-  --cmu-dark: #37104D;
-  
-  --gold-primary: #F5A623;
-  --gold-light: #FFF9ED;
-  --gold-glow: rgba(245, 166, 35, 0.4);
-  
-  --bg-app: #F4F5F9;
-  --surface: #FFFFFF;
-  --surface-glass: rgba(255, 255, 255, 0.85);
-  
-  --text-h1: #111827;
-  --text-body: #4B5563;
-  --text-muted: #9CA3AF;
-  
-  --border-light: rgba(0, 0, 0, 0.04);
-  --border-glass: rgba(255, 255, 255, 0.5);
-  
-  /* Modern Soft Shadows */
-  --shadow-float: 0 20px 40px rgba(90, 30, 122, 0.08);
-  --shadow-card: 0 10px 24px rgba(0, 0, 0, 0.04);
-  --shadow-glow: 0 0 24px var(--gold-glow);
-  
-  --radius-xl: 32px;
-  --radius-lg: 24px;
-  --radius-md: 16px;
-  --safe-bottom: env(safe-area-inset-bottom, 24px);
+  --pri:#4A1270;--pri-50:#F8F1FD;--pri-100:#EEE0FA;--pri-200:#D9BAF3;--pri-300:#B880E3;--pri-400:#8B44C8;--pri-600:#4A1270;--pri-700:#350D52;
+  --gold:#D4A147;--gold-light:#FDF6E8;--gold-bright:#F5C842;
+  --green:#22C55E;--green-bg:#DCFCE7;--red:#EF4444;--red-bg:#FEE2E2;--blue:#3B82F6;--blue-bg:#DBEAFE;--amber:#F59E0B;--amber-bg:#FEF3C7;
+  --bg:#F3F1F6;--surface:#FFFFFF;--txt:#18181B;--txt-2:#52525B;--txt-3:#A1A1AA;
+  --border:rgba(0,0,0,0.06);--border-s:rgba(0,0,0,0.1);
+  --sh-xs:0 1px 2px rgba(0,0,0,0.04);--sh-sm:0 1px 3px rgba(0,0,0,0.05),0 4px 8px rgba(0,0,0,0.04);--sh-md:0 2px 8px rgba(0,0,0,0.04),0 8px 20px rgba(0,0,0,0.06);--sh-lg:0 4px 12px rgba(0,0,0,0.04),0 20px 40px rgba(0,0,0,0.08);
+  --sh-gold:0 4px 16px rgba(212,161,71,0.25);--sh-pri:0 4px 16px rgba(74,18,112,0.25);
+  --r-xs:8px;--r-sm:12px;--r-md:16px;--r-lg:20px;--r-xl:24px;--r-full:999px;
+  --safe-b:env(safe-area-inset-bottom,16px);--dock-h:72px;
+  --ease:cubic-bezier(0.16,1,0.3,1);--ease-b:cubic-bezier(0.34,1.56,0.64,1);
 }
-
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
-body {
-  font-family: 'Noto Sans Thai', sans-serif;
-  background-color: #E9EAF0; /* Darker background outside app area for contrast */
-  display: flex;
-  justify-content: center;
-  color: var(--text-body);
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-.material-symbols-rounded { display: inline-block; vertical-align: middle; line-height: 1; }
-
-.app {
-  width: 100%;
-  max-width: 430px;
-  min-height: 100vh;
-  position: relative;
-  background: var(--bg-app);
-  box-shadow: 0 0 40px rgba(0,0,0,0.1);
-  overflow: hidden; /* For glass floating nav */
-}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{overflow-x:hidden}
+body{font-family:'Noto Sans Thai',-apple-system,BlinkMacSystemFont,sans-serif;background:#E8E6EB;color:var(--txt);display:flex;justify-content:center;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.app{width:100%;max-width:430px;min-height:100vh;background:var(--bg);position:relative;box-shadow:0 0 0 1px rgba(0,0,0,0.04),0 0 80px rgba(0,0,0,0.08)}
+.material-symbols-rounded{display:inline-block;vertical-align:middle;line-height:1}
 
 /* Animations */
-.page { display: none; padding-bottom: calc(120px + var(--safe-bottom)); min-height: 100vh; animation: fadeScale 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.page.active { display: block; }
-@keyframes fadeScale { 
-  from { opacity: 0; transform: translateY(16px) scale(0.98); } 
-  to { opacity: 1; transform: translateY(0) scale(1); } 
-}
-@keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 0 var(--gold-glow); }
-  70% { box-shadow: 0 0 0 16px rgba(245, 166, 35, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0); }
-}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0.9);opacity:0}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes countUp{from{opacity:0;transform:translateY(8px) scale(0.8)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fadeOut{to{opacity:0;transform:translate(-50%,-70%) scale(1.2)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes confettiFall{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
 
-/* ==== DYNAMIC HEADER ==== */
-.header-container {
-  background: radial-gradient(circle at top right, var(--cmu-secondary), var(--cmu-dark));
-  padding: 48px 24px 80px;
-  border-radius: 0 0 40px 40px;
-  position: relative;
-  overflow: hidden;
-}
-/* Decorative Orbs */
-.header-container::before {
-  content: ''; position: absolute; top: -20%; right: -10%; width: 250px; height: 250px;
-  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-  border-radius: 50%;
-}
-.header-container::after {
-  content: ''; position: absolute; bottom: -20%; left: -10%; width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
-  border-radius: 50%;
-}
+.page{display:none;padding-bottom:calc(var(--dock-h) + var(--safe-b) + 20px);min-height:100vh;animation:fadeIn .4s var(--ease)}
+.page.active{display:block}
 
-.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; position: relative; z-index: 2; }
-.icon-btn {
-  width: 44px; height: 44px; border-radius: 14px; border: none;
-  background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
-  color: white; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: 0.2s;
-}
-.icon-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
-.header-text { position: relative; z-index: 2; color: white; }
-.header-text h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
-.header-text p { font-size: 14px; opacity: 0.85; font-weight: 300; }
+/* Header (Glassmorphism & Sticky) */
+.hdr{padding:14px 20px 12px;position:sticky;top:0;z-index:50;background:rgba(243,241,246,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid transparent;transition:border-color .3s}
+.hdr.scrolled{border-bottom-color:var(--border)}
+.hdr-c{text-align:center}.hdr-l{text-align:left;padding-top:48px}
+.hdr h1{font-size:21px;font-weight:900;letter-spacing:-0.02em;color:var(--pri);display:flex;align-items:center;gap:6px}
+.hdr-c h1{justify-content:center}
+.hdr .sub{font-size:12.5px;color:var(--txt-3);font-weight:500;margin-top:2px}
+.hdr .hero{color:var(--gold);filter:drop-shadow(0 3px 6px rgba(212,161,71,0.3));margin-bottom:4px}
+.ib{position:absolute;top:14px;width:38px;height:38px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-xs);cursor:pointer;transition:transform .15s var(--ease),background .15s;color:var(--txt-2)}
+.ib .material-symbols-rounded{font-size:20px}.ib:active{transform:scale(0.9);background:var(--bg)}
+.ib.l{left:16px}.ib.r{right:16px}
+.ib .dot{position:absolute;top:-1px;right:-1px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--surface)}
 
-/* ==== GLASSMORPHISM POINTS CARD ==== */
-.points-glass-card {
-  margin: -50px 24px 24px;
-  background: var(--surface-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-xl);
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: var(--shadow-float);
-  position: relative;
-  z-index: 10;
-}
-.points-val-area { display: flex; flex-direction: column; }
-.points-label { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.points-number { font-size: 36px; font-weight: 800; color: var(--cmu-primary); line-height: 1; display: flex; align-items: baseline; gap: 4px; }
-.points-number span { font-size: 16px; font-weight: 600; color: var(--text-muted); }
-.points-icon-wrapper {
-  width: 64px; height: 64px; border-radius: 20px;
-  background: linear-gradient(135deg, #FFF0D4 0%, #F5A623 100%);
-  display: flex; align-items: center; justify-content: center;
-  color: white; box-shadow: var(--shadow-glow);
-}
-.points-icon-wrapper .material-symbols-rounded { font-size: 36px; }
+/* Tier Badge */
+.tier-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:var(--r-full);font-size:10px;font-weight:800;letter-spacing:0.02em;text-transform:uppercase;box-shadow:var(--sh-xs);vertical-align:middle;margin-left:8px}
 
-/* ==== LEADERBOARD (Redesigned Podium) ==== */
-.podium-stage {
-  display: flex; align-items: flex-end; justify-content: center;
-  gap: 12px; padding: 0 24px 32px;
-}
-.podium-pillar {
-  flex: 1; background: var(--surface); border-radius: var(--radius-lg);
-  padding: 20px 12px; text-align: center; box-shadow: var(--shadow-card);
-  position: relative; transition: 0.3s;
-}
-.podium-pillar.rank-1 {
-  flex: 1.2; transform: translateY(-16px);
-  background: linear-gradient(180deg, var(--surface) 0%, var(--gold-light) 100%);
-  border: 2px solid var(--gold-primary); box-shadow: var(--shadow-glow);
-}
-.podium-pillar.rank-2 { border-top: 4px solid #E2E8F0; }
-.podium-pillar.rank-3 { border-top: 4px solid #FCD34D; }
+/* Points Pill */
+.pp{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-full);padding:8px 20px;box-shadow:var(--sh-sm)}
+.pp .lbl{font-size:12.5px;font-weight:600;color:var(--txt-2)}.pp .val{font-size:22px;font-weight:900;color:var(--pri);letter-spacing:-0.03em}
+.pf{position:absolute;right:20px;top:18px;display:flex;align-items:center;gap:6px;background:var(--gold-light);border:1px solid rgba(212,161,71,0.2);border-radius:var(--r-full);padding:6px 14px;box-shadow:var(--sh-xs)}
+.pf .val{font-size:15px;font-weight:800;color:var(--gold)}.pf .sub{font-size:9px;color:var(--txt-3);font-weight:600}
 
-.avatar-wrap {
-  width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 20px;
-  background: var(--cmu-light); color: var(--cmu-primary);
-  display: flex; align-items: center; justify-content: center; position: relative;
-}
-.rank-1 .avatar-wrap {
-  width: 72px; height: 72px; background: linear-gradient(135deg, #FDE68A, #F5A623);
-  color: white; border-radius: 24px; animation: pulseGlow 2s infinite;
-}
-.avatar-wrap .material-symbols-rounded { font-size: 32px; }
-.rank-1 .avatar-wrap .material-symbols-rounded { font-size: 40px; }
+/* Toast */
+#tb{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9999;width:calc(100% - 32px);max-width:396px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:rgba(255,255,255,0.92);backdrop-filter:blur(16px) saturate(200%);-webkit-backdrop-filter:blur(16px) saturate(200%);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:10px;animation:popIn .35s var(--ease);pointer-events:auto;border-left:4px solid var(--green)}
+.toast.err{border-left-color:var(--red)}.toast.warn{border-left-color:var(--amber)}
+.toast .ti{font-size:22px}.toast .ti.ok{color:var(--green)}.toast .ti.er{color:var(--red)}.toast .ti.wa{color:var(--amber)}
+.toast .tm{font-size:13px;font-weight:600;flex:1}.toast .tc{font-size:18px;color:var(--txt-3);cursor:pointer;padding:4px}
 
-.badge-rank {
-  position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-  width: 28px; height: 28px; background: var(--surface); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 800; border: 2px solid;
-}
-.rank-1 .badge-rank { border-color: var(--gold-primary); color: var(--gold-primary); width: 32px; height: 32px; font-size: 16px;}
-.rank-2 .badge-rank { border-color: #94A3B8; color: #64748B; }
-.rank-3 .badge-rank { border-color: #F59E0B; color: #D97706; }
+.pts-anim{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:8000;pointer-events:none;font-size:48px;font-weight:900;color:var(--gold);text-shadow:0 2px 12px rgba(212,161,71,0.4);animation:countUp .5s var(--ease-b) forwards,fadeOut .4s 1s ease forwards}
 
-.p-name { font-size: 12px; font-weight: 600; color: var(--text-h1); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-.p-score { font-size: 16px; font-weight: 800; color: var(--cmu-primary); }
-.rank-1 .p-score { font-size: 20px; color: var(--gold-primary); }
+/* Confetti */
+.confetti{position:fixed;width:8px;height:14px;z-index:9000;pointer-events:none;opacity:0.8}
 
-/* List Ranking */
-.ranking-list-container { padding: 0 24px; }
-.list-item {
-  background: var(--surface); border-radius: var(--radius-md); padding: 12px 16px;
-  display: flex; align-items: center; margin-bottom: 12px; box-shadow: var(--shadow-card);
-  transition: transform 0.2s; border: 1px solid transparent;
-}
-.list-item:active { transform: scale(0.98); }
-.list-item.highlight { background: var(--cmu-primary); color: white; box-shadow: var(--shadow-float); }
-.list-rank-num { width: 32px; font-size: 16px; font-weight: 800; color: var(--text-muted); }
-.list-item.highlight .list-rank-num { color: rgba(255,255,255,0.7); }
-.list-avatar {
-  width: 44px; height: 44px; border-radius: 14px; background: var(--bg-app);
-  display: flex; align-items: center; justify-content: center; margin-right: 16px;
-  color: var(--text-muted); font-size: 24px;
-}
-.list-item.highlight .list-avatar { background: rgba(255,255,255,0.2); color: white; }
-.list-info { flex: 1; }
-.list-name { font-size: 14px; font-weight: 600; color: var(--text-h1); }
-.list-item.highlight .list-name { color: white; }
-.list-points { font-size: 16px; font-weight: 800; color: var(--cmu-primary); text-align: right;}
-.list-item.highlight .list-points { color: var(--gold-primary); }
+/* ═══ LEADERBOARD ═══ */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:10px 16px 8px}
+.pod{display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 8px 16px;box-shadow:var(--sh-sm);transition:transform .2s var(--ease)}
+.pod:active{transform:scale(0.97)}
+.pod.p1{width:38%;border-color:var(--gold);background:linear-gradient(180deg,#FFFDF5 0%,#FFF 50%);box-shadow:var(--sh-gold);transform:translateY(-14px);z-index:2}
+.pod.p2{width:30%;border-top:3px solid #CBD5E1}.pod.p3{width:30%;border-top:3px solid var(--gold-bright)}
+.pod .cr{margin-bottom:6px}.pod.p1 .cr{color:var(--gold);font-size:32px;animation:float 3s ease-in-out infinite}
+.pod.p2 .cr{color:#94A3B8;font-size:24px}.pod.p3 .cr{color:var(--amber);font-size:24px}
+.pod .av{width:52px;height:52px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:4px}
+.pod.p1 .av{width:68px;height:68px;border-radius:var(--r-md);background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:#fff;font-size:32px;box-shadow:var(--sh-gold)}
+.pod.p2 .av{background:var(--pri-50);color:var(--pri);font-size:26px}.pod.p3 .av{background:var(--amber-bg);color:var(--amber);font-size:26px}
+.pod .rk{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);min-width:22px;height:22px;padding:0 4px;border-radius:7px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh-xs)}
+.pod.p1 .rk{background:var(--txt);color:#fff;border:none;min-width:26px;height:26px;font-size:12px}
+.pod .nm{font-size:12px;font-weight:700;margin-top:10px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pod .sc{font-size:15px;font-weight:900;color:var(--pri);letter-spacing:-0.02em}.pod.p1 .sc{font-size:17px;color:var(--gold)}.pod .su{font-size:10px;color:var(--txt-3);font-weight:600}
 
-/* ==== MISSIONS PAGE (Clean Cards) ==== */
-.chip-group { display: flex; gap: 12px; padding: 0 24px 16px; overflow-x: auto; scrollbar-width: none; }
-.chip-group::-webkit-scrollbar { display: none; }
-.chip-btn {
-  padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600;
-  background: var(--surface); color: var(--text-body); border: 1px solid var(--border-light);
-  white-space: nowrap; transition: 0.2s; box-shadow: var(--shadow-card);
-}
-.chip-btn.active { background: var(--cmu-dark); color: white; border-color: var(--cmu-dark); }
+.rl{padding:0 20px;margin-top:14px}
+.rlh{display:flex;justify-content:space-between;padding:6px 14px;font-size:11px;font-weight:700;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--border);margin-bottom:8px}
+.rr{display:flex;align-items:center;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:8px;box-shadow:var(--sh-xs);transition:transform .12s var(--ease)}
+.rr:active{transform:scale(0.98)}
+.rr .num{width:28px;font-size:13px;font-weight:800;color:var(--txt-3);text-align:center}
+.rr .av{width:38px;height:38px;border-radius:10px;background:var(--bg);margin:0 10px;display:flex;align-items:center;justify-content:center;color:var(--txt-2);border:1px solid var(--border)}
+.rr .nm{flex:1;font-size:13.5px;font-weight:600}.rr .sc{font-size:13.5px;font-weight:800}.rr .ar{color:var(--txt-3);margin-left:4px}
 
-.task-card {
-  background: var(--surface); border-radius: var(--radius-lg); padding: 20px;
-  margin: 0 24px 16px; box-shadow: var(--shadow-card); display: flex; gap: 16px;
-}
-.task-icon {
-  width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.task-icon .material-symbols-rounded { font-size: 32px; }
-.bg-teal { background: #E6FFFA; color: #0D9488; }
-.bg-purple { background: var(--cmu-light); color: var(--cmu-secondary); }
-.bg-blue { background: #EFF6FF; color: #2563EB; }
+/* Animated Highlight Card */
+.mr{margin:14px 20px;padding:14px 16px;background:var(--pri-50);border-radius:var(--r-md);display:flex;align-items:center;box-shadow:var(--sh-sm);animation:popIn .5s var(--ease) .3s both;position:relative;overflow:hidden;border:1px solid var(--pri-200)}
+.mr::before{content:'';position:absolute;top:50%;left:50%;width:200%;height:200%;background:conic-gradient(transparent,rgba(184,128,227,0.3),transparent 40%);animation:spin 4s linear infinite;transform-origin:0 0;z-index:0}
+.mr > *{position:relative;z-index:1}
+.mr .rc{text-align:center;margin-right:10px}.mr .rc .lbl{font-size:9px;font-weight:700;color:var(--pri-400);text-transform:uppercase;letter-spacing:0.05em}.mr .rc .num{font-size:22px;font-weight:900;color:var(--pri)}
+.mr .av{width:38px;height:38px;border-radius:10px;background:var(--pri);color:#fff;margin-right:10px;display:flex;align-items:center;justify-content:center}
+.mr .nm{flex:1;font-size:14px;font-weight:700;color:var(--pri)}.mr .sc{font-size:17px;font-weight:900;color:var(--pri);margin-left:auto}
 
-.task-details { flex: 1; }
-.task-title { font-size: 15px; font-weight: 700; color: var(--text-h1); margin-bottom: 6px; }
-.task-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
-.task-bottom { display: flex; justify-content: space-between; align-items: center; }
-.task-reward { font-size: 15px; font-weight: 800; color: var(--gold-primary); display: flex; align-items: center; gap: 4px; }
-.action-btn {
-  padding: 8px 20px; border-radius: 12px; font-size: 13px; font-weight: 700; border: none; cursor: pointer;
-}
-.btn-outline { background: var(--surface); color: var(--cmu-primary); border: 2px solid var(--cmu-light); }
-.btn-filled { background: var(--cmu-primary); color: white; box-shadow: 0 4px 12px rgba(90, 30, 122, 0.2); }
-.btn-done { background: #ECFDF5; color: #059669; }
+.cta{margin:10px 20px 16px;padding:14px 18px;background:linear-gradient(135deg,#7C3AED 0%,var(--pri) 50%,var(--pri-700) 100%);border-radius:var(--r-lg);display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--sh-pri);transition:transform .15s var(--ease);position:relative;overflow:hidden}
+.cta:active{transform:scale(0.97)}
+.cta::after{content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);animation:shimmer 4s infinite}
+.cta .ci{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.cta .ct{color:#fff;flex:1}.cta .ct .m{font-size:15px;font-weight:800;letter-spacing:-0.01em}.cta .ct .s{font-size:11.5px;opacity:0.8;font-weight:500}
+.cta .ca{color:rgba(255,255,255,0.7)}
 
-/* ==== REWARDS PAGE (Attractive Showcase) ==== */
-.reward-showcase { margin: 0 24px 20px; }
-.reward-item {
-  background: var(--surface); border-radius: var(--radius-xl); overflow: hidden;
-  box-shadow: var(--shadow-card); margin-bottom: 20px; border: 1px solid var(--border-light);
-}
-.r-image-box {
-  height: 160px; background: linear-gradient(135deg, var(--cmu-light), #E9D5F2);
-  display: flex; align-items: center; justify-content: center; position: relative;
-}
-.r-image-box .material-symbols-rounded { font-size: 80px; color: var(--cmu-primary); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1)); }
-.r-tag {
-  position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
-  padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 800; color: var(--gold-primary);
-  display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-.r-content { padding: 20px; }
-.r-title { font-size: 18px; font-weight: 800; color: var(--text-h1); margin-bottom: 8px; }
-.r-desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
-.r-footer { display: flex; justify-content: space-between; align-items: center; }
-.stock-badge { font-size: 12px; font-weight: 700; color: #DC2626; background: #FEF2F2; padding: 6px 12px; border-radius: 8px; }
+/* ═══ MISSIONS ═══ */
+.mt{display:flex;gap:6px;padding:4px 20px 14px;overflow-x:auto;scrollbar-width:none}.mt::-webkit-scrollbar{display:none}
+.mtb{padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--txt-2);border:1px solid var(--border);background:var(--surface);border-radius:var(--r-full);cursor:pointer;transition:all .2s var(--ease);white-space:nowrap;display:flex;align-items:center;gap:5px;box-shadow:var(--sh-xs);font-family:inherit}
+.mtb .material-symbols-rounded{font-size:16px}.mtb.active{background:var(--txt);color:#fff;border-color:var(--txt);box-shadow:var(--sh-sm)}.mtb:active{transform:scale(0.95)}
 
-/* ==== HISTORY PAGE ==== */
-.history-wrap { padding: 0 24px; }
-.date-divider { font-size: 14px; font-weight: 700; color: var(--text-muted); margin: 24px 0 16px; }
-.history-card {
-  background: var(--surface); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px;
-  display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-card);
-}
-.h-icon {
-  width: 48px; height: 48px; border-radius: 16px; background: var(--bg-app);
-  display: flex; align-items: center; justify-content: center; color: var(--text-body);
-}
-.h-info { flex: 1; }
-.h-title { font-size: 15px; font-weight: 700; color: var(--text-h1); }
-.h-time { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-.h-points { font-size: 16px; font-weight: 800; color: #10B981; }
+.msh{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 10px}
+.msh .t{font-size:15px;font-weight:800}.msh .s{font-size:11.5px;color:var(--txt-3);font-weight:500}
+.mtm{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--pri);background:var(--pri-50);padding:5px 10px;border-radius:var(--r-full);border:1px solid var(--pri-100)}
+.mtm .material-symbols-rounded{font-size:14px}
 
-/* ==== PROFILE PAGE ==== */
-.profile-header {
-  text-align: center; margin: -60px 24px 24px; background: var(--surface);
-  border-radius: var(--radius-xl); padding: 32px 20px 24px; box-shadow: var(--shadow-float);
-}
-.p-avatar-box {
-  width: 110px; height: 110px; margin: 0 auto 16px; border-radius: 32px;
-  background: var(--cmu-light); display: flex; align-items: center; justify-content: center;
-  color: var(--cmu-primary); position: relative; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-}
-.p-avatar-box .material-symbols-rounded { font-size: 56px; }
-.edit-badge {
-  position: absolute; bottom: -4px; right: -4px; width: 36px; height: 36px;
-  background: var(--text-h1); color: white; border-radius: 12px; border: 3px solid white;
-  display: flex; align-items: center; justify-content: center; font-size: 18px;
-}
-.p-fullname { font-size: 22px; font-weight: 800; color: var(--text-h1); }
-.p-role { font-size: 14px; font-weight: 600; color: var(--cmu-secondary); margin-top: 4px; }
+.mc{display:flex;align-items:center;gap:12px;margin:0 20px 10px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-xs);transition:transform .12s var(--ease),border-color .2s,box-shadow .2s}
+.mc:active{transform:scale(0.98)}.mc.hl{border-color:var(--gold);background:linear-gradient(135deg,#FFFEF5 0%,#FFF 100%);box-shadow:0 2px 12px rgba(212,161,71,0.1)}.mc.done-c{opacity:0.65}
+.mc .ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mc .ic .material-symbols-rounded{font-size:26px}
+.ip{background:var(--pri-50);color:var(--pri)}.ir{background:var(--red-bg);color:var(--red)}.ib2{background:var(--blue-bg);color:var(--blue)}.ig{background:var(--green-bg);color:var(--green)}.ia{background:var(--amber-bg);color:var(--amber)}
+.mc .inf{flex:1;min-width:0}.mc .inf .t{font-size:13.5px;font-weight:700;letter-spacing:-0.01em;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc .inf .d{font-size:11.5px;color:var(--txt-3);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mc .inf .pg{height:4px;background:var(--bg);border-radius:2px;margin-top:8px;overflow:hidden}
+.mc .inf .pg .fl{height:100%;background:linear-gradient(90deg,var(--pri-300),var(--pri));border-radius:2px;transition:width .6s var(--ease)}
+.mc .inf .pt{font-size:10px;color:var(--txt-3);margin-top:3px;font-weight:600}
+.mc .rw{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.mc .ps{font-size:14px;font-weight:800;color:var(--gold);display:flex;align-items:center;gap:2px}.mc .ps .material-symbols-rounded{font-size:15px}
+.ab{padding:7px 14px;border-radius:var(--r-xs);border:none;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .12s var(--ease);font-family:inherit;background:var(--txt);color:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.ab:active{transform:scale(0.93)}.ab.dn{background:var(--bg);color:var(--txt-3);border:1px solid var(--border);box-shadow:none;pointer-events:none}.ab.pb{background:var(--pri)}
 
-.data-group { background: var(--surface); border-radius: var(--radius-lg); margin: 0 24px 24px; padding: 8px 24px; box-shadow: var(--shadow-card); }
-.data-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--bg-app); }
-.data-row:last-child { border-bottom: none; }
-.d-label { font-size: 14px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 8px; }
-.d-label .material-symbols-rounded { font-size: 20px; }
-.d-value { font-size: 14px; font-weight: 700; color: var(--text-h1); }
+.sb{margin:20px;padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-sm)}
+.sbh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.sbh .t{font-size:14px;font-weight:800}.sbh .s{font-size:11px;color:var(--txt-3)}
+.stk{display:flex;justify-content:space-between;position:relative}
+.stk .ln{position:absolute;top:15px;left:16px;right:16px;height:2px;background:var(--border);z-index:0}
+.stk .lf{position:absolute;top:15px;left:16px;height:2px;background:var(--pri);z-index:0;transition:width .6s var(--ease)}
+.sd{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:1}
+.sdt{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--surface);border:2px solid var(--border);color:var(--txt-3);transition:all .3s var(--ease)}
+.sdt.ok{background:var(--pri);border-color:var(--pri);color:#fff;box-shadow:0 3px 8px rgba(74,18,112,0.2)}
+.sdt.gi{border-color:var(--gold);background:var(--gold-light);color:var(--gold)}
+.sd .lb{font-size:9px;font-weight:600;color:var(--txt-2)}
+.sbn{margin-top:16px;text-align:center;font-size:11.5px;font-weight:600;color:var(--txt-2);background:var(--pri-50);padding:10px;border-radius:var(--r-xs);border:1px dashed var(--pri-200)}
+.sbn strong{color:var(--gold);font-weight:800}
 
-/* QR Code Section */
-.qr-container { background: var(--surface); margin: 0 24px 24px; border-radius: var(--radius-xl); padding: 32px 24px; text-align: center; box-shadow: var(--shadow-card); }
-.qr-heading { font-size: 18px; font-weight: 800; color: var(--cmu-dark); margin-bottom: 24px; }
-.qr-frame { background: white; padding: 16px; border-radius: 24px; border: 1px solid var(--border-light); display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
-.qr-frame canvas { width: 180px !important; height: 180px !important; }
+/* ═══ HISTORY ═══ */
+.hs{display:flex;gap:10px;margin:0 20px 14px}
+.hst{flex:1;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-xs)}
+.hst .tp{display:flex;align-items:center;gap:8px;margin-bottom:8px}.hst .hic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.hst .lbl{font-size:10.5px;font-weight:600;color:var(--txt-3)}.hst .vl{font-size:20px;font-weight:900;letter-spacing:-0.02em}.hst .vl .u{font-size:11px;font-weight:500;color:var(--txt-3)}
 
-/* ==== FLOATING DOCK NAVIGATION (Modern iOS Style) ==== */
-.nav-dock-wrapper {
-  position: fixed; bottom: var(--safe-bottom); left: 0; width: 100%;
-  display: flex; justify-content: center; pointer-events: none; z-index: 100;
-}
-.floating-dock {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.4);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
-  border-radius: 100px;
-  display: flex; align-items: center; padding: 8px 12px;
-  gap: 4px; pointer-events: auto;
-}
-.dock-item {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 64px; height: 56px; border-radius: 24px; border: none; background: transparent;
-  color: var(--text-muted); cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.dock-item .material-symbols-rounded { font-size: 26px; transition: 0.3s; margin-bottom: 2px;}
-.dock-label { font-size: 10px; font-weight: 700; opacity: 0; transform: translateY(4px); transition: 0.3s; position: absolute; bottom: 6px;}
+.hf{display:flex;gap:6px;padding:0 20px 10px;overflow-x:auto;scrollbar-width:none}.hf::-webkit-scrollbar{display:none}
+.hfb{padding:7px 14px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;color:var(--txt-2);cursor:pointer;white-space:nowrap;transition:all .15s var(--ease);font-family:inherit}
+.hfb.active{background:var(--txt);color:#fff;border-color:var(--txt)}.hfb:active{transform:scale(0.95)}
+.hfr{margin-left:auto;display:flex;align-items:center;gap:4px;padding:7px 12px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;color:var(--txt-2);cursor:pointer;font-family:inherit}
 
-/* Active State */
-.dock-item.active { color: var(--cmu-primary); }
-.dock-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; transform: translateY(-8px); }
-.dock-item.active .dock-label { opacity: 1; transform: translateY(0); }
+.hd{padding:6px 24px;font-size:12px;font-weight:700;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.02em}
+.hi{display:flex;align-items:center;gap:12px;margin:0 20px 8px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);box-shadow:var(--sh-xs);transition:transform .12s var(--ease);cursor:pointer}
+.hi:active{transform:scale(0.98)}
+.hi .tm{text-align:center;flex-shrink:0;width:40px;border-right:1px dashed var(--border);padding-right:10px}
+.hi .tm .material-symbols-rounded{font-size:16px;color:var(--txt-3)}.hi .tm .tx{font-size:10.5px;font-weight:700;color:var(--txt-2);margin-top:1px}
+.hi .hc{width:36px;height:36px;border-radius:10px;background:var(--pri-50);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hi .hc .material-symbols-rounded{font-size:20px;color:var(--pri)}
+.hi .inf{flex:1;min-width:0}.hi .inf .pl{font-size:13px;font-weight:700;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hi .inf .lc{font-size:11px;color:var(--txt-3);margin-top:1px}
+.hi .inf .tg{display:inline-block;padding:2px 7px;margin-top:4px;background:var(--pri-50);border-radius:4px;font-size:10px;font-weight:600;color:var(--pri)}
+.hi .ps{text-align:right;flex-shrink:0}.hi .ps .v{font-size:14px;font-weight:800;color:var(--green)}.hi .ps .v.ng{color:var(--red)}
+.hn{margin:14px 20px;padding:10px 14px;background:var(--pri-50);border-radius:var(--r-xs);font-size:11px;color:var(--txt-3);font-weight:500;display:flex;align-items:center;gap:6px}
 
-/* Center FAB in Dock */
-.dock-item.fab {
-  background: var(--cmu-primary); color: white; border-radius: 50%;
-  width: 56px; height: 56px; margin: 0 4px;
-  box-shadow: 0 8px 20px rgba(90, 30, 122, 0.3);
-}
-.dock-item.fab.active { transform: scale(1.05); }
-.dock-item.fab .material-symbols-rounded { margin: 0; font-size: 28px;}
-.dock-item.fab .dock-label { display: none; }
+/* ═══ REWARDS ═══ */
+.db{display:flex;gap:10px;margin:0 20px 14px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-xs)}
+.db .it{flex:1;display:flex;align-items:center;gap:10px}.db .it:first-child{border-right:1px solid var(--border);padding-right:10px}
+.db .it .material-symbols-rounded{font-size:22px;color:var(--txt-3)}.db .it .lbl{font-size:10.5px;color:var(--txt-3);font-weight:600}.db .it .vl{font-size:17px;font-weight:900}
 
+.rwi{margin:0 20px 12px;padding:8px 12px;background:var(--pri-50);border-radius:var(--r-xs);font-size:12px;color:var(--pri);font-weight:600;display:flex;align-items:center;gap:6px}
+
+.rwc{margin:0 20px 14px;padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-sm);transition:transform .12s var(--ease);position:relative;overflow:hidden}
+.rwc:active{transform:scale(0.98)}.rwc.g1{border-color:var(--gold);box-shadow:var(--sh-gold)}
+.rwc .rwh{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--bg)}
+.rwc .bd{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:var(--sh-xs)}
+.rwc.g1 .bd{background:linear-gradient(135deg,var(--gold-bright),var(--gold))}.rwc.g2 .bd{background:linear-gradient(135deg,#CBD5E1,#94A3B8)}.rwc.g3 .bd{background:linear-gradient(135deg,#FDE68A,#D97706)}.rwc.gc .bd{background:var(--pri-50);color:var(--pri)}
+.rwc .rt{font-size:14px;font-weight:800;margin-bottom:2px}.rwc .rs{font-size:11.5px;color:var(--txt-3)}
+.rwc .rb{display:flex;gap:14px}
+.rwc .ris{flex:1;display:flex;flex-direction:column;gap:8px}
+.rwc .ri{display:flex;align-items:flex-start;gap:8px;font-size:12.5px}
+.rwc .ri .material-symbols-rounded{font-size:16px;color:var(--txt-3);flex-shrink:0;margin-top:1px}
+.rwc .ri .n{font-weight:700}.rwc .ri .vl{font-size:11px;color:var(--txt-3)}
+.rwc .rim{width:64px;height:64px;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--border)}.rwc .rim .material-symbols-rounded{font-size:28px;color:var(--txt-2)}
+.rwc .pc{font-size:11px;font-weight:700;color:var(--gold);text-align:center;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:3px}
+
+.rdb{width:100%;padding:12px;margin-top:10px;border-radius:var(--r-xs);border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s var(--ease)}
+.rdb.can{background:var(--pri);color:#fff;box-shadow:var(--sh-pri)}.rdb.can:active{transform:scale(0.97)}
+.rdb.cant{background:var(--bg);color:var(--txt-3);border:1px solid var(--border);cursor:default}
+.rdb.ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.3);cursor:default}
+.rwn{margin:14px 20px;font-size:11px;color:var(--txt-3);text-align:center;font-weight:500}
+
+/* ═══ PROFILE ═══ */
+.pc2{margin:0 20px 18px;padding:30px 18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-md);text-align:center;position:relative;overflow:hidden}
+.pc2::before{content:'';position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(135deg,#7C3AED 0%,var(--pri) 60%,var(--pri-700) 100%)}
+.pc2 .av{width:80px;height:80px;border-radius:24px;background:var(--surface);margin:0 auto 12px;position:relative;z-index:1;border:3px solid var(--surface);display:flex;align-items:center;justify-content:center;color:var(--pri);box-shadow:var(--sh-sm)}
+.pc2 .av .material-symbols-rounded{font-size:36px}
+.pc2 .eb{position:absolute;bottom:-3px;right:-3px;width:26px;height:26px;border-radius:8px;background:var(--txt);color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);cursor:pointer;z-index:2;transition:transform .15s}
+.pc2 .eb:active{transform:scale(0.85)}.pc2 .eb .material-symbols-rounded{font-size:13px}
+.pc2 .nm{font-size:17px;font-weight:900;position:relative;z-index:1;letter-spacing:-0.02em;display:flex;align-items:center;justify-content:center;gap:6px}
+.pc2 .mo{font-size:12px;font-weight:600;color:var(--pri);margin-top:3px}
+.pc2 .inf{margin-top:20px;border-top:1px solid var(--bg);padding-top:14px;text-align:left}
+.pc2 .rw2{display:flex;align-items:center;padding:10px 14px;border-bottom:1px dashed var(--border)}.pc2 .rw2:last-child{border-bottom:none}
+.pc2 .rw2 .ri2{width:30px;height:30px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0}
+.pc2 .rw2 .ri2 .material-symbols-rounded{font-size:16px;color:var(--txt-3)}
+.pc2 .rw2 .rl2{font-size:12px;font-weight:600;color:var(--txt-2);flex:1}.pc2 .rw2 .rv2{font-size:12.5px;font-weight:700}
+
+.qb{margin:0 20px 20px;padding:22px 18px;background:var(--surface);border:1px dashed var(--border-s);border-radius:var(--r-md);box-shadow:var(--sh-xs);text-align:center}
+.qb .qt{font-size:14px;font-weight:800;color:var(--pri);display:flex;align-items:center;justify-content:center;gap:6px}.qb .qs{font-size:12px;color:var(--txt-3);margin-top:2px}
+.qw{margin:14px auto;width:150px;height:150px;background:#fff;border:1px solid var(--border);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;padding:10px;box-shadow:var(--sh-xs)}
+.qw canvas{width:100%!important;height:100%!important}
+.qb .nt{margin-top:10px;padding:8px 12px;background:var(--gold-light);border-radius:var(--r-xs);font-size:11px;color:var(--txt-2);font-weight:500;display:flex;align-items:center;justify-content:center;gap:4px}
+
+/* ═══ DOCK ═══ */
+.dw{position:fixed;bottom:var(--safe-b);left:0;width:100%;display:flex;justify-content:center;pointer-events:none;z-index:100}
+.dk{background:rgba(255,255,255,0.82);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.5);box-shadow:0 8px 32px rgba(0,0,0,0.08),0 0 0 1px rgba(0,0,0,0.04);border-radius:100px;display:flex;padding:5px 6px;gap:1px;pointer-events:auto}
+.dk .nv{display:flex;flex-direction:column;align-items:center;justify-content:center;width:58px;height:52px;border-radius:18px;border:none;background:transparent;color:var(--txt-3);cursor:pointer;transition:all .2s var(--ease);position:relative;font-family:inherit}
+.dk .nv .ni{font-size:23px;margin-bottom:1px;transition:transform .2s var(--ease)}
+.dk .nv .nl{font-size:9px;font-weight:700;opacity:0;transform:translateY(3px);transition:all .2s var(--ease);position:absolute;bottom:6px}
+.dk .nv.active{color:var(--pri)}.dk .nv.active .ni{transform:translateY(-5px);font-variation-settings:'FILL' 1}.dk .nv.active .nl{opacity:1;transform:translateY(0)}
+.dk .nv.ct{margin:-14px 3px 0;width:52px;height:52px;background:var(--pri);color:#fff;border-radius:50%;box-shadow:0 6px 18px rgba(74,18,112,0.3);border:3px solid var(--bg)}
+.dk .nv.ct.active{transform:scale(1.06);box-shadow:0 6px 24px rgba(74,18,112,0.4)}.dk .nv.ct .ni{margin:0;font-size:26px;transform:none!important}.dk .nv.ct .nl{display:none}
+
+/* ═══ MODALS ═══ */
+.ov{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center}.ov.show{display:flex}
+.mdl{background:var(--surface);border-radius:var(--r-xl);padding:28px 22px;width:88%;max-width:360px;text-align:center;position:relative;box-shadow:var(--sh-lg);border:1px solid var(--border);animation:popIn .35s var(--ease)}
+.mdl .xb{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s;z-index:10}
+.mdl .xb .material-symbols-rounded{font-size:18px;color:var(--txt-2)}.mdl .xb:active{transform:scale(0.85)}
+.mdl .mt2{font-size:17px;font-weight:900;margin-bottom:3px;letter-spacing:-0.02em}.mdl .ms{font-size:12px;color:var(--txt-3)}
+.mdl .mqr{margin:18px auto;padding:10px;background:#fff;border:1px solid var(--border);border-radius:var(--r-md);display:inline-block;box-shadow:var(--sh-xs)}
+.mdl .mqr canvas{width:150px!important;height:150px!important}
+.mdl .mn{font-size:14px;font-weight:700;margin-top:6px}.mdl .mi{font-size:11.5px;color:var(--txt-3)}
+.mdl .mnt{margin-top:12px;padding:8px 12px;background:var(--gold-light);border-radius:var(--r-xs);font-size:11px;color:var(--txt-2)}
+
+.lcc{margin:14px 0 10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-xs);display:flex;gap:10px;align-items:center;text-align:left}
+.lcc .li{width:36px;height:36px;background:var(--surface);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-xs);border:1px solid var(--border)}
+.lcc .ln{font-size:13px;font-weight:800}.lcc .ld{font-size:11px;font-weight:600;color:var(--gold)}
+#mm{width:100%;height:180px;border-radius:var(--r-sm);border:1px solid var(--border);z-index:1}
+.mbs{display:flex;gap:8px;margin-top:14px}
+.mb{flex:1;padding:11px;border-radius:var(--r-xs);font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .12s var(--ease);border:none;font-family:inherit}
+.mb:active{transform:scale(0.95)}.mb.sec{background:var(--bg);color:var(--txt-2);border:1px solid var(--border)}.mb.pri{background:var(--pri);color:#fff;box-shadow:var(--sh-pri);flex:1.5}
+.mb .material-symbols-rounded{font-size:16px}
+
+/* Noti Panel */
+.np{position:absolute;top:0;right:0;width:100%;height:100%;background:var(--surface);z-index:150;display:none;animation:slideRight .3s var(--ease)}.np.show{display:block}
+.np .nh{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}.np .nh h2{font-size:18px;font-weight:900}
+.np .nls{padding:12px 20px}
+.ni2{padding:12px;border-radius:var(--r-sm);background:var(--bg);margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.ni2.ur{background:var(--pri-50);border-left:3px solid var(--pri)}
+.ni2 .nc{width:32px;height:32px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ni2 .nt2{font-size:13px;font-weight:700}.ni2 .nd{font-size:11.5px;color:var(--txt-3);margin-top:1px}.ni2 .ntm{font-size:10px;color:var(--txt-3);margin-top:4px}
+
+/* Edit Modal */
+.ef{margin-bottom:14px;text-align:left}.ef label{font-size:12px;font-weight:700;color:var(--txt-2);display:block;margin-bottom:4px}
+.ef input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-xs);font-size:14px;font-weight:600;font-family:inherit;background:var(--bg);transition:border-color .2s}
+.ef input:focus{outline:none;border-color:var(--pri);background:#fff}
+.svb{width:100%;padding:12px;border:none;border-radius:var(--r-xs);background:var(--pri);color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .12s var(--ease);box-shadow:var(--sh-pri)}.svb:active{transform:scale(0.97)}
+
+.user-pin{width:14px;height:14px;background:#3B82F6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 8px rgba(59,130,246,0.5)}
+.dest-pin{width:32px;height:32px;background:var(--pri);color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(74,18,112,0.4);border:2px solid #fff}
+.dest-pin-inner{transform:rotate(45deg)}.dest-pin-inner .material-symbols-rounded{font-size:16px}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
-
+<div id="tb"></div>
 <div class="app" id="app">
 
-  <div class="page active" id="page-leaderboard">
-    <div class="header-container">
-      <div class="top-bar">
-        <button class="icon-btn"><span class="material-symbols-rounded">sort</span></button>
-        <button class="icon-btn"><span class="material-symbols-rounded">notifications</span></button>
-      </div>
-      <div class="header-text">
-        <h1>Hall of Fame</h1>
-        <p>อันดับนักกิจกรรม CMU Library</p>
-      </div>
-    </div>
-
-    <div class="points-glass-card">
-      <div class="points-val-area">
-        <div class="points-label">คะแนนของคุณ</div>
-        <div class="points-number">2,560 <span>แต้ม</span></div>
-      </div>
-      <div class="points-icon-wrapper">
-        <span class="material-symbols-rounded">military_tech</span>
-      </div>
-    </div>
-
-    <div class="podium-stage">
-      <div class="podium-pillar rank-2">
-        <div class="avatar-wrap"><span class="material-symbols-rounded">face_3</span><div class="badge-rank">2</div></div>
-        <div class="p-name">ปรียานุช</div>
-        <div class="p-score">9,850</div>
-      </div>
-      <div class="podium-pillar rank-1">
-        <div class="avatar-wrap"><span class="material-symbols-rounded">person</span><div class="badge-rank">1</div></div>
-        <div class="p-name">ไอรินลดา</div>
-        <div class="p-score">12,540</div>
-      </div>
-      <div class="podium-pillar rank-3">
-        <div class="avatar-wrap"><span class="material-symbols-rounded">face_6</span><div class="badge-rank">3</div></div>
-        <div class="p-name">กิตติพงศ์</div>
-        <div class="p-score">7,230</div>
-      </div>
-    </div>
-
-    <div class="ranking-list-container">
-      <div class="list-item">
-        <div class="list-rank-num">4</div>
-        <div class="list-avatar"><span class="material-symbols-rounded">face_4</span></div>
-        <div class="list-info"><div class="list-name">สุรีย์พร</div></div>
-        <div class="list-points">5,680</div>
-      </div>
-      <div class="list-item highlight" style="margin-top: 16px;">
-        <div class="list-rank-num">12</div>
-        <div class="list-avatar"><span class="material-symbols-rounded">person</span></div>
-        <div class="list-info"><div class="list-name">ไอรินลดา ฟ้าธานีจรดดินฟ้าอากาศ</div></div>
-        <div class="list-points">2,560</div>
-      </div>
-    </div>
+<div class="page active" id="page-leaderboard">
+  <div class="hdr hdr-c" id="hdr-main">
+    <button class="ib l"><span class="material-symbols-rounded">chevron_left</span></button>
+    <div class="hero"><span class="material-symbols-rounded" style="font-size:44px">workspace_premium</span></div>
+    <h1>จัดอันดับกิจกรรม</h1>
+    <p class="sub">สะสมคะแนนต่อเนื่อง เลื่อนอันดับของคุณ</p>
+    <button class="ib r bn"><span class="material-symbols-rounded">notifications</span><span class="dot"></span></button>
   </div>
-
-  <div class="page" id="page-missions">
-    <div class="header-container" style="padding-bottom: 60px;">
-      <div class="header-text">
-        <h1>ภารกิจกิจกรรม</h1>
-        <p>ทำภารกิจเพื่อสะสมคะแนนแลกรางวัล</p>
-      </div>
-    </div>
-
-    <div class="chip-group" style="margin-top:-20px; position:relative; z-index:10;">
-      <button class="chip-btn active">ภารกิจแนะนำ</button>
-      <button class="chip-btn">ประจำวัน</button>
-      <button class="chip-btn">Green Library</button>
-    </div>
-
-    <div class="task-card">
-      <div class="task-icon bg-teal"><span class="material-symbols-rounded">park</span></div>
-      <div class="task-details">
-        <div class="task-title">บริจาคหนังสือ ร.ร.บ้านแม่แมะ</div>
-        <div class="task-desc">ร่วมเป็นส่วนหนึ่งในโครงการ Green Library สร้างห้องสมุดเพื่อน้อง</div>
-        <div class="task-bottom">
-          <div class="task-reward"><span class="material-symbols-rounded">stars</span> +100</div>
-          <button class="action-btn btn-filled">เข้าร่วม</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="task-card">
-      <div class="task-icon bg-purple"><span class="material-symbols-rounded">local_library</span></div>
-      <div class="task-details">
-        <div class="task-title">เข้าใช้บริการห้องสมุด มช.</div>
-        <div class="task-desc">สแกนบัตรนักศึกษาเข้าใช้พื้นที่ห้องสมุด (รีเซ็ตทุกวัน)</div>
-        <div class="task-bottom">
-          <div class="task-reward"><span class="material-symbols-rounded">stars</span> +20</div>
-          <button class="action-btn btn-done">สำเร็จแล้ว</button>
-        </div>
-      </div>
-    </div>
+  <div style="text-align:center;margin:10px 0"><div class="pp"><span class="material-symbols-rounded" style="font-size:22px;color:var(--gold)">stars</span><span class="lbl">คะแนนของคุณ</span><span class="val gp">2,560</span><span style="font-size:11px;color:var(--txt-3)">แต้ม</span></div></div>
+  <div class="podium">
+    <div class="pod p2" style="animation:slideUp .4s var(--ease) .1s both"><span class="material-symbols-rounded cr">military_tech</span><div class="av"><span class="material-symbols-rounded">face_3</span><div class="rk">2</div></div><div class="nm">ปรียานุช</div><div class="sc">9,850</div><div class="su">แต้ม</div></div>
+    <div class="pod p1" style="animation:slideUp .4s var(--ease) both"><span class="material-symbols-rounded cr">military_tech</span><div class="av"><span class="material-symbols-rounded">person</span><div class="rk">1</div></div><div class="nm gns">ธนศรัณกร</div><div class="sc">12,540</div><div class="su">แต้ม</div></div>
+    <div class="pod p3" style="animation:slideUp .4s var(--ease) .2s both"><span class="material-symbols-rounded cr">military_tech</span><div class="av"><span class="material-symbols-rounded">face_6</span><div class="rk">3</div></div><div class="nm">กิตติพงศ์</div><div class="sc">7,230</div><div class="su">แต้ม</div></div>
   </div>
-
-  <div class="page" id="page-rewards">
-    <div class="header-container" style="padding-bottom: 70px;">
-      <div class="header-text">
-        <h1>แลกรางวัล</h1>
-        <p>นำคะแนนสะสมมาแลกสิทธิพิเศษ</p>
-      </div>
-    </div>
-
-    <div class="points-glass-card" style="margin-bottom: 32px;">
-      <div class="points-val-area">
-        <div class="points-label">แต้มที่ใช้ได้</div>
-        <div class="points-number">2,560</div>
-      </div>
-      <div class="points-icon-wrapper" style="background: linear-gradient(135deg, #A7F3D0, #10B981);">
-        <span class="material-symbols-rounded">redeem</span>
-      </div>
-    </div>
-
-    <div class="reward-showcase">
-      <div class="reward-item">
-        <div class="r-image-box">
-          <div class="r-tag"><span class="material-symbols-rounded">stars</span> 1,500</div>
-          <span class="material-symbols-rounded">local_cafe</span>
-        </div>
-        <div class="r-content">
-          <div class="r-title">เครื่องดื่มฟรี 1 แก้ว</div>
-          <div class="r-desc">รับสิทธิ์แลกเครื่องดื่มเมนูใดก็ได้ 1 แก้วที่ร้านกาแฟในห้องสมุด มช.</div>
-          <div class="r-footer">
-            <span class="stock-badge">เหลือ 15 สิทธิ์</span>
-            <button class="action-btn btn-filled">แลกรางวัล</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="reward-item">
-        <div class="r-image-box" style="background: linear-gradient(135deg, #F3F4F6, #D1D5DB);">
-          <div class="r-tag"><span class="material-symbols-rounded">stars</span> 3,000</div>
-          <span class="material-symbols-rounded" style="color:#6B7280;">shopping_bag</span>
-        </div>
-        <div class="r-content">
-          <div class="r-title" style="color:#6B7280;">กระเป๋าผ้า CMU Library</div>
-          <div class="r-desc">กระเป๋าผ้ารักษ์โลกคอลเลกชันพิเศษสำหรับนักอ่าน (หมดเขต 30 มิ.ย.)</div>
-          <div class="r-footer">
-            <span class="stock-badge" style="background:#F1F5F9; color:#64748B;">แต้มไม่พอ</span>
-            <button class="action-btn btn-outline" style="color:#9CA3AF; border-color:#E5E7EB;">รอสะสมเพิ่ม</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="rl">
+    <div class="rlh"><span>อันดับ</span><span>คะแนนสะสม</span></div>
+    <div class="rr" style="animation:slideUp .3s var(--ease) .3s both"><div class="num">4</div><div class="av"><span class="material-symbols-rounded">face_4</span></div><div class="nm">สุรีย์พร</div><div class="sc">5,680</div><div class="ar"><span class="material-symbols-rounded">chevron_right</span></div></div>
+    <div class="rr" style="animation:slideUp .3s var(--ease) .4s both"><div class="num">5</div><div class="av"><span class="material-symbols-rounded">face</span></div><div class="nm">ณัฐพล</div><div class="sc">4,360</div><div class="ar"><span class="material-symbols-rounded">chevron_right</span></div></div>
+    <div class="rr" style="animation:slideUp .3s var(--ease) .5s both"><div class="num">6</div><div class="av"><span class="material-symbols-rounded">face_5</span></div><div class="nm">วราภรณ์</div><div class="sc">3,210</div><div class="ar"><span class="material-symbols-rounded">chevron_right</span></div></div>
   </div>
-
-  <div class="page" id="page-history">
-    <div class="header-container" style="padding-bottom: 40px;">
-      <div class="header-text">
-        <h1>ประวัติกิจกรรม</h1>
-        <p>รายการสะสมคะแนนย้อนหลัง</p>
-      </div>
-    </div>
-
-    <div class="history-wrap">
-      <div class="date-divider">วันนี้ (11 มิ.ย.)</div>
-      <div class="history-card">
-        <div class="h-icon" style="color:var(--cmu-primary); background:var(--cmu-light);"><span class="material-symbols-rounded">qr_code_scanner</span></div>
-        <div class="h-info">
-          <div class="h-title">เข้าห้องสมุด มช.</div>
-          <div class="h-time">09:32 น.</div>
-        </div>
-        <div class="h-points">+20</div>
-      </div>
-
-      <div class="date-divider">เมื่อวานนี้ (10 มิ.ย.)</div>
-      <div class="history-card">
-        <div class="h-icon" style="color:#2563EB; background:#EFF6FF;"><span class="material-symbols-rounded">menu_book</span></div>
-        <div class="h-info">
-          <div class="h-title">ยืมหนังสือผ่าน Kiosk</div>
-          <div class="h-time">14:15 น.</div>
-        </div>
-        <div class="h-points">+30</div>
-      </div>
-      <div class="history-card">
-        <div class="h-icon" style="color:#0D9488; background:#E6FFFA;"><span class="material-symbols-rounded">volunteer_activism</span></div>
-        <div class="h-info">
-          <div class="h-title">บริจาคหนังสือ</div>
-          <div class="h-time">10:00 น.</div>
-        </div>
-        <div class="h-points">+100</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="page" id="page-profile">
-    <div class="header-container" style="padding-bottom: 90px;">
-      <div class="top-bar" style="justify-content: flex-end;">
-        <button class="icon-btn"><span class="material-symbols-rounded">settings</span></button>
-      </div>
-      <div class="header-text">
-        <h1>โปรไฟล์</h1>
-      </div>
-    </div>
-
-    <div class="profile-header">
-      <div class="p-avatar-box">
-        <span class="material-symbols-rounded">person</span>
-        <div class="edit-badge"><span class="material-symbols-rounded" style="font-size:16px;">edit</span></div>
-      </div>
-      <div class="p-fullname">ไอรินลดา ฟ้าธานีจรดดินฟ้าอากาศ</div>
-      <div class="p-role">CMU Library</div>
-    </div>
-
-    <div class="qr-container">
-      <div class="qr-heading">สแกน QR เพื่อรับแต้ม</div>
-      <div class="qr-frame" id="profile-qr"></div>
-      <p style="font-size:13px; color:var(--text-muted); margin-top:20px;">แสดงคิวอาร์โค้ดนี้ให้เจ้าหน้าที่สแกน</p>
-    </div>
-
-    <div class="data-group">
-      <div class="data-row">
-        <div class="d-label"><span class="material-symbols-rounded">badge</span> รหัสสมาชิก</div>
-        <div class="d-value">LIB9999999999</div>
-      </div>
-      <div class="data-row">
-        <div class="d-label"><span class="material-symbols-rounded">school</span> สังกัด</div>
-        <div class="d-value">การสื่อสารมวลชน</div>
-      </div>
-      <div class="data-row">
-        <div class="d-label"><span class="material-symbols-rounded">mail</span> อีเมล</div>
-        <div class="d-value">Irynlada.f@cmu.ac.th</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="nav-dock-wrapper">
-    <nav class="floating-dock">
-      <button class="dock-item" data-page="missions">
-        <span class="material-symbols-rounded">task_alt</span>
-        <span class="dock-label">ภารกิจ</span>
-      </button>
-      <button class="dock-item" data-page="history">
-        <span class="material-symbols-rounded">history</span>
-        <span class="dock-label">ประวัติ</span>
-      </button>
-      
-      <button class="dock-item fab active" data-page="leaderboard">
-        <span class="material-symbols-rounded">social_leaderboard</span>
-      </button>
-
-      <button class="dock-item" data-page="rewards">
-        <span class="material-symbols-rounded">card_giftcard</span>
-        <span class="dock-label">รางวัล</span>
-      </button>
-      <button class="dock-item" data-page="profile">
-        <span class="material-symbols-rounded">person</span>
-        <span class="dock-label">โปรไฟล์</span>
-      </button>
-    </nav>
-  </div>
-
+  <div class="mr"><div class="rc"><div class="lbl">อันดับ</div><div class="num">12</div></div><div class="av"><span class="material-symbols-rounded">person</span></div><div class="nm">คุณ</div><div class="sc gp">2,560</div><div class="tier-badge" style="background:linear-gradient(135deg,#FDE68A,#D4A147);color:var(--pri-700)">Gold</div></div>
+  <div class="cta" onclick="showQR()"><div class="ci"><span class="material-symbols-rounded">qr_code_scanner</span></div><div class="ct"><div class="m">สแกนรับคะแนน</div><div class="s">เข้าร่วมกิจกรรม รับคะแนนเพิ่ม</div></div><div class="ca"><span class="material-symbols-rounded">arrow_forward</span></div></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<div class="page" id="page-missions">
+  <div class="hdr hdr-l" id="hdr-ms" style="position:sticky"><button class="ib l"><span class="material-symbols-rounded">chevron_left</span></button><h1>ภารกิจ <span class="material-symbols-rounded" style="font-size:20px;color:var(--gold)">auto_awesome</span></h1><p class="sub">ทำภารกิจให้สำเร็จ สะสมคะแนน</p><div class="pf"><span class="material-symbols-rounded" style="font-size:16px;color:var(--gold)">stars</span><div><div class="val gp">2,560</div><div class="sub">แต้ม</div></div></div></div>
+  <div class="mt">
+    <button class="mtb active" data-tab="daily"><span class="material-symbols-rounded">content_paste</span> ประจำวัน</button>
+    <button class="mtb" data-tab="weekly"><span class="material-symbols-rounded">event_note</span> ประจำสัปดาห์</button>
+    <button class="mtb" data-tab="special"><span class="material-symbols-rounded">grade</span> พิเศษ</button>
+    <button class="mtb" data-tab="done"><span class="material-symbols-rounded">check_circle</span> สำเร็จแล้ว</button>
+  </div>
+  <div id="tab-daily"><div class="msh"><div><div class="t">ภารกิจแนะนำ</div><div class="s">ไปตามจุดต่างๆ เพื่อรับแต้ม</div></div><div class="mtm"><span class="material-symbols-rounded">timer</span><span id="tmr">14:23:18</span></div></div>
+    <div class="mc hl"><div class="ic ir"><span class="material-symbols-rounded">palette</span></div><div class="inf"><div class="t" style="color:var(--pri)">ชมนิทรรศการ คณะวิจิตรศิลป์</div><div class="d">เช็คอินเข้าชมนิทรรศการศิลปะนิพนธ์</div><div class="pg"><div class="fl" style="width:0%"></div></div><div class="pt">0/1</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+150</div><button class="ab pb dm" data-pts="150" data-title="ชมนิทรรศการศิลปะ" data-dest="คณะวิจิตรศิลป์ มช." data-poi="หอศิลป์มหาวิทยาลัย" data-lat="18.7937" data-lng="98.9504">ทำภารกิจ</button></div></div>
+    <div class="mc"><div class="ic ib2"><span class="material-symbols-rounded">history_edu</span></div><div class="inf"><div class="t">ห้องสมุด คณะมนุษยศาสตร์</div><div class="d">เยี่ยมชมและค้นคว้าหนังสือหมวดประวัติศาสตร์</div><div class="pg"><div class="fl" style="width:0%"></div></div><div class="pt">0/1</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+100</div><button class="ab dm" data-pts="100" data-title="ห้องสมุดคณะมนุษย์" data-dest="คณะมนุษยศาสตร์ มช." data-poi="ห้องสมุดคณะมนุษยศาสตร์" data-lat="18.8016" data-lng="98.9525">ทำภารกิจ</button></div></div>
+    <div class="mc"><div class="ic ip"><span class="material-symbols-rounded">local_library</span></div><div class="inf"><div class="t">ยืมหนังสือผ่าน Kiosk</div><div class="d">ทำรายการยืมหนังสืออัตโนมัติด้วยตนเอง</div><div class="pg"><div class="fl" style="width:0%"></div></div><div class="pt">0/1</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+50</div><button class="ab dm" data-pts="50" data-title="ยืมหนังสือ Kiosk" data-dest="หอสมุดมหาวิทยาลัย" data-poi="ตู้ Kiosk ชั้น 1" data-lat="18.8005" data-lng="98.9500">ทำภารกิจ</button></div></div>
+    <div class="mc done-c"><div class="ic ig"><span class="material-symbols-rounded">eco</span></div><div class="inf"><div class="t">โครงการ Green Library</div><div class="d">คัดแยกขยะถูกประเภท หรือ บริจาคหนังสือ</div><div class="pg"><div class="fl" style="width:100%"></div></div><div class="pt">1/1</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+50</div><button class="ab dn"><span class="material-symbols-rounded" style="font-size:13px">check</span> รับแล้ว</button></div></div>
+    <div class="mc"><div class="ic ia"><span class="material-symbols-rounded">rate_review</span></div><div class="inf"><div class="t">รีวิวหนังสือที่อ่าน</div><div class="d">เขียนรีวิวหนังสือผ่านระบบ e-Document</div><div class="pg"><div class="fl" style="width:0%"></div></div><div class="pt">0/1</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+20</div><button class="ab dd" data-pts="20" data-title="รีวิวหนังสือออนไลน์">ทำภารกิจ</button></div></div>
+  </div>
+  <div id="tab-weekly" class="hidden"><div class="msh"><div><div class="t">ภารกิจประจำสัปดาห์</div><div class="s">รีเซ็ตทุกวันจันทร์</div></div></div>
+    <div class="mc"><div class="ic ib2"><span class="material-symbols-rounded">auto_stories</span></div><div class="inf"><div class="t">อ่านหนังสือ 3 เล่ม</div><div class="d">ยืมและส่งคืนหนังสือ 3 เล่มภายในสัปดาห์</div><div class="pg"><div class="fl" style="width:33%"></div></div><div class="pt">1/3</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+200</div><button class="ab" disabled style="opacity:0.5">กำลังดำเนินการ</button></div></div>
+    <div class="mc"><div class="ic ig"><span class="material-symbols-rounded">groups</span></div><div class="inf"><div class="t">ชวนเพื่อนเข้าร่วม 2 คน</div><div class="d">แชร์ลิงก์ให้เพื่อนสมัครสมาชิก</div><div class="pg"><div class="fl" style="width:0%"></div></div><div class="pt">0/2</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+300</div><button class="ab dd" data-pts="300" data-title="ชวนเพื่อนเข้าร่วม">ทำภารกิจ</button></div></div>
+  </div>
+  <div id="tab-special" class="hidden"><div class="msh"><div><div class="t">ภารกิจพิเศษ</div><div class="s">กิจกรรมจำกัดเวลา</div></div></div>
+    <div class="mc hl"><div class="ic ia"><span class="material-symbols-rounded">celebration</span></div><div class="inf"><div class="t" style="color:var(--pri)">งานสัปดาห์ห้องสมุด มช.</div><div class="d">เข้าร่วมกิจกรรมพิเศษ 14-18 มิ.ย. 2569</div><div class="pg"><div class="fl" style="width:0%"></div></div><div class="pt">0/1</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+500</div><button class="ab pb dm" data-pts="500" data-title="งานสัปดาห์ห้องสมุด" data-dest="หอสมุดกลาง มช." data-poi="ลานกิจกรรม ชั้น 1" data-lat="18.8005" data-lng="98.9500">ทำภารกิจ</button></div></div>
+  </div>
+  <div id="tab-done" class="hidden"><div class="msh"><div><div class="t">ภารกิจที่สำเร็จแล้ว</div><div class="s">ทั้งหมดของคุณ</div></div></div><div id="dl"><div class="mc done-c"><div class="ic ig"><span class="material-symbols-rounded">eco</span></div><div class="inf"><div class="t">โครงการ Green Library</div><div class="d">คัดแยกขยะถูกประเภท</div><div class="pg"><div class="fl" style="width:100%"></div></div><div class="pt">1/1</div></div><div class="rw"><div class="ps"><span class="material-symbols-rounded">stars</span>+50</div><button class="ab dn"><span class="material-symbols-rounded" style="font-size:13px">check</span> รับแล้ว</button></div></div></div></div>
+  <div class="sb"><div class="sbh"><div><div class="t">Streak Progress</div><div class="s">ทำภารกิจติดต่อกัน รับรางวัลพิเศษ!</div></div><span class="material-symbols-rounded" style="font-size:30px;color:var(--gold)">card_giftcard</span></div>
+    <div class="stk"><div class="ln"></div><div class="lf" style="width:38%"></div>
+      <div class="sd"><div class="sdt ok"><span class="material-symbols-rounded" style="font-size:14px">check</span></div><span class="lb">วัน 1</span></div>
+      <div class="sd"><div class="sdt ok"><span class="material-symbols-rounded" style="font-size:14px">check</span></div><span class="lb">วัน 2</span></div>
+      <div class="sd"><div class="sdt ok"><span class="material-symbols-rounded" style="font-size:14px">check</span></div><span class="lb">วัน 3</span></div>
+      <div class="sd"><div class="sdt gi"><span class="material-symbols-rounded" style="font-size:14px">redeem</span></div><span class="lb">วัน 4</span></div>
+      <div class="sd"><div class="sdt">5</div><span class="lb">วัน 5</span></div>
+      <div class="sd"><div class="sdt">6</div><span class="lb">วัน 6</span></div>
+      <div class="sd"><div class="sdt gi"><span class="material-symbols-rounded" style="font-size:14px">redeem</span></div><span class="lb">วัน 7</span></div>
+    </div>
+    <div class="sbn"><span class="material-symbols-rounded" style="font-size:14px;vertical-align:middle">info</span> ทำครบ 7 วัน รับโบนัสพิเศษ <strong>+100 แต้ม</strong></div>
+  </div>
+</div>
+
+<div class="page" id="page-history">
+  <div class="hdr hdr-l" id="hdr-hs" style="position:sticky"><button class="ib l"><span class="material-symbols-rounded">chevron_left</span></button><h1>ประวัติกิจกรรม</h1><p class="sub">ตรวจสอบรายการสะสมคะแนนย้อนหลัง</p><button class="ib r"><span class="material-symbols-rounded">calendar_month</span></button></div>
+  <div class="hs"><div class="hst"><div class="tp"><div class="hic" style="background:var(--pri-50);color:var(--pri)"><span class="material-symbols-rounded" style="font-size:18px">pin_drop</span></div><div class="lbl">เข้าร่วมทั้งหมด</div></div><div class="vl gv">28 <span class="u">ครั้ง</span></div></div><div class="hst"><div class="tp"><div class="hic" style="background:var(--gold-light);color:var(--gold)"><span class="material-symbols-rounded" style="font-size:18px">stars</span></div><div class="lbl">คะแนนรวม</div></div><div class="vl gp">2,560</div></div></div>
+  <div class="hf"><button class="hfb active" data-f="all">ทั้งหมด</button><button class="hfb" data-f="today">วันนี้</button><button class="hfb" data-f="week">สัปดาห์นี้</button><button class="hfb" data-f="month">เดือนนี้</button><button class="hfr"><span class="material-symbols-rounded" style="font-size:14px">tune</span> ตัวกรอง</button></div>
+  <div id="hl">
+    <div class="hd" data-date="11">11 มิถุนายน 2569</div>
+    <div class="hi" data-dy="11"><div class="tm"><span class="material-symbols-rounded">pin_drop</span><div class="tx">09:32</div></div><div class="hc"><span class="material-symbols-rounded">account_balance</span></div><div class="inf"><div class="pl">ห้องสมุดมหาวิทยาลัย</div><div class="lc">สแกนเข้าอาคาร</div><div class="tg">เข้าใช้บริการ</div></div><div class="ps"><div class="v">+20</div></div></div>
+    <div class="hi" data-dy="11"><div class="tm"><span class="material-symbols-rounded">pin_drop</span><div class="tx">08:15</div></div><div class="hc"><span class="material-symbols-rounded">palette</span></div><div class="inf"><div class="pl">คณะวิจิตรศิลป์</div><div class="lc">หอศิลป์มหาวิทยาลัย</div><div class="tg">สแกนจุดกิจกรรม</div></div><div class="ps"><div class="v">+20</div></div></div>
+    <div class="hi" data-dy="11"><div class="tm"><span class="material-symbols-rounded">auto_stories</span><div class="tx">18:45</div></div><div class="hc"><span class="material-symbols-rounded">menu_book</span></div><div class="inf"><div class="pl">ลานกิจกรรมชั้น 1</div><div class="lc">อาคารหอสมุดกลาง</div><div class="tg">ส่งเสริมการอ่าน</div></div><div class="ps"><div class="v">+10</div></div></div>
+    <div class="hd" data-date="10">10 มิถุนายน 2569</div>
+    <div class="hi" data-dy="10"><div class="tm"><span class="material-symbols-rounded">pin_drop</span><div class="tx">14:20</div></div><div class="hc"><span class="material-symbols-rounded">domain</span></div><div class="inf"><div class="pl">อาคารเรียนรวม</div><div class="lc">มหาวิทยาลัยเชียงใหม่</div><div class="tg">บริการวิชาการ</div></div><div class="ps"><div class="v">+20</div></div></div>
+    <div class="hi" data-dy="10"><div class="tm"><span class="material-symbols-rounded">pin_drop</span><div class="tx">11:05</div></div><div class="hc"><span class="material-symbols-rounded">restaurant</span></div><div class="inf"><div class="pl">โรงอาหาร อมช.</div><div class="lc">มหาวิทยาลัยเชียงใหม่</div><div class="tg">รักษ์โลก</div></div><div class="ps"><div class="v">+10</div></div></div>
+    <div class="hd" data-date="9">9 มิถุนายน 2569</div>
+    <div class="hi" data-dy="9"><div class="tm"><span class="material-symbols-rounded">auto_stories</span><div class="tx">16:30</div></div><div class="hc"><span class="material-symbols-rounded">water</span></div><div class="inf"><div class="pl">อ่างแก้ว มช.</div><div class="lc">มุมพักผ่อน</div><div class="tg">กิจกรรมนักศึกษา</div></div><div class="ps"><div class="v">+10</div></div></div>
+    <div class="hi" data-dy="9"><div class="tm"><span class="material-symbols-rounded">pin_drop</span><div class="tx">09:10</div></div><div class="hc"><span class="material-symbols-rounded">deck</span></div><div class="inf"><div class="pl">ศาลาอ่างแก้ว</div><div class="lc">จุดจัดกิจกรรม</div><div class="tg">เช็คอินกิจกรรม</div></div><div class="ps"><div class="v">+20</div></div></div>
+  </div>
+  <div class="hn"><span class="material-symbols-rounded" style="font-size:16px">info</span> ข้อมูลแสดงผลย้อนหลัง 90 วัน</div>
+</div>
+
+<div class="page" id="page-rewards">
+  <div class="hdr hdr-l" id="hdr-rw" style="position:sticky"><button class="ib l"><span class="material-symbols-rounded">chevron_left</span></button><h1>แลกของรางวัล</h1><p class="sub">นำคะแนนมาแลกสิทธิพิเศษและของที่ระลึก</p><button class="ib r bn"><span class="material-symbols-rounded">card_giftcard</span><span class="dot"></span></button></div>
+  <div class="db"><div class="it"><span class="material-symbols-rounded" style="color:var(--gold)">stars</span><div><div class="lbl">คะแนนที่ใช้ได้</div><div class="vl gp">2,560</div></div></div><div class="it"><span class="material-symbols-rounded" style="color:var(--pri)">military_tech</span><div><div class="lbl">อันดับปัจจุบัน</div><div class="vl">12</div></div></div></div>
+  <div class="rwi"><span class="material-symbols-rounded" style="font-size:15px">info</span> ประกาศผลรางวัลใหญ่ 31 ธ.ค. 2569</div>
+  <div class="rwc g1"><div class="rwh"><div class="bd">1</div><div><div class="rt">รางวัลยอดนักอ่าน ประจำปี</div><div class="rs">สำหรับคะแนนสูงสุดอันดับ 1</div></div></div><div class="rb"><div class="ris"><div class="ri"><span class="material-symbols-rounded">tablet_mac</span><div><div class="n">iPad Air (256GB)</div><div class="vl">สนับสนุนการศึกษา</div></div></div><div class="ri"><span class="material-symbols-rounded">card_giftcard</span><div><div class="n">บัตรศูนย์หนังสือ มช.</div><div class="vl">มูลค่า 5,000 บาท</div></div></div><div class="ri"><span class="material-symbols-rounded">workspace_premium</span><div class="n">เกียรติบัตรเชิดชูเกียรติ</div></div></div><div style="display:flex;flex-direction:column;align-items:center"><div class="rim"><span class="material-symbols-rounded">tablet_mac</span></div><div class="pc"><span class="material-symbols-rounded" style="font-size:13px">emoji_events</span> 1 รางวัล</div></div></div></div>
+  <div class="rwc g2"><div class="rwh"><div class="bd">2</div><div><div class="rt">รางวัลที่ 2</div><div class="rs">คะแนนสูงสุดอันดับ 2</div></div></div><div class="rb"><div class="ris"><div class="ri"><span class="material-symbols-rounded">menu_book</span><div><div class="n">Kindle Paperwhite</div><div class="vl">มูลค่า 6,900 บาท</div></div></div><div class="ri"><span class="material-symbols-rounded">card_giftcard</span><div><div class="n">บัตรศูนย์หนังสือ มช.</div><div class="vl">มูลค่า 3,000 บาท</div></div></div></div><div style="display:flex;flex-direction:column;align-items:center"><div class="rim"><span class="material-symbols-rounded">menu_book</span></div><div class="pc" style="color:#64748B"><span class="material-symbols-rounded" style="font-size:13px">emoji_events</span> 1 รางวัล</div></div></div></div>
+  <div class="rwc g3"><div class="rwh"><div class="bd">3</div><div><div class="rt">รางวัลที่ 3</div><div class="rs">คะแนนสูงสุดอันดับ 3</div></div></div><div class="rb"><div class="ris"><div class="ri"><span class="material-symbols-rounded">checkroom</span><div><div class="n">เสื้อแจ็คเก็ต CMU Library</div><div class="vl">รุ่น Limited Edition</div></div></div><div class="ri"><span class="material-symbols-rounded">card_giftcard</span><div><div class="n">บัตรศูนย์หนังสือ มช.</div><div class="vl">มูลค่า 1,000 บาท</div></div></div></div><div style="display:flex;flex-direction:column;align-items:center"><div class="rim" style="color:var(--amber)"><span class="material-symbols-rounded">checkroom</span></div><div class="pc" style="color:var(--amber)"><span class="material-symbols-rounded" style="font-size:13px">emoji_events</span> 1 รางวัล</div></div></div></div>
+  <div class="rwc gc"><div class="rwh"><div class="bd"><span class="material-symbols-rounded" style="font-size:20px">local_cafe</span></div><div><div class="rt">แลกเครื่องดื่มฟรี</div><div class="rs">ใช้คะแนนสะสมแลกรับได้ทันที</div></div></div><div class="rb" style="flex-direction:column"><div class="ri"><span class="material-symbols-rounded">coffee</span><div><div class="n">กาแฟ / เครื่องดื่ม 1 แก้ว</div><div class="vl">ร้านกาแฟในห้องสมุด (เหลือ <span id="ds">15</span> สิทธิ์)</div></div></div><button class="rdb can" data-cost="1500" data-item="เครื่องดื่มฟรี" data-sid="ds">แลก 1,500 แต้ม</button></div></div>
+  <div class="rwc gc"><div class="rwh"><div class="bd" style="background:var(--bg);color:var(--txt-3)"><span class="material-symbols-rounded" style="font-size:20px">shopping_bag</span></div><div><div class="rt">กระเป๋าผ้า CMU Library</div><div class="rs">ใช้คะแนนสะสมแลกรับได้ทันที</div></div></div><div class="rb" style="flex-direction:column"><div class="ri"><span class="material-symbols-rounded">eco</span><div><div class="n">กระเป๋าผ้ารักษ์โลก</div><div class="vl">คอลเลกชันพิเศษ (เหลือ <span id="bs">3</span> ใบ)</div></div></div><button class="rdb cant" data-cost="3000" data-item="กระเป๋าผ้า" data-sid="bs">แต้มไม่พอ (ต้องใช้ 3,000)</button></div></div>
+  <div class="rwn">เงื่อนไขเป็นไปตามที่ห้องสมุดมหาวิทยาลัยเชียงใหม่กำหนด</div>
+</div>
+
+<div class="page" id="page-profile">
+  <div class="hdr hdr-l" id="hdr-pf" style="position:sticky"><button class="ib l"><span class="material-symbols-rounded">chevron_left</span></button><h1>โปรไฟล์นักศึกษา</h1><p class="sub">จัดการข้อมูลส่วนตัวของคุณ</p><button class="ib r" id="bst"><span class="material-symbols-rounded">settings</span></button></div>
+  <div class="pc2"><div class="av"><span class="material-symbols-rounded">person</span><div class="eb" id="bed"><span class="material-symbols-rounded">edit</span></div></div><div class="nm gn" style="display:flex;align-items:center;justify-content:center;gap:6px">ธนศรัณกร พิชญนันทกุล <div class="tier-badge tb-display" style="background:linear-gradient(135deg,#FDE68A,#D4A147);color:var(--pri-700)">Gold</div></div><div class="mo">CMU Library Corporate Comms</div><div class="inf"><div class="rw2"><div class="ri2"><span class="material-symbols-rounded">badge</span></div><div class="rl2">รหัสสมาชิก</div><div class="rv2">LIB6701234567</div></div><div class="rw2"><div class="ri2"><span class="material-symbols-rounded">school</span></div><div class="rl2">คณะ / สังกัด</div><div class="rv2 gf">บริหารธุรกิจ (MBA)</div></div><div class="rw2"><div class="ri2"><span class="material-symbols-rounded">mail</span></div><div class="rl2">อีเมลติดต่อ</div><div class="rv2 ge" style="font-size:11.5px">thanasarankorn.p@cmu.ac.th</div></div></div></div>
+  <div class="qb"><div class="qt"><span class="material-symbols-rounded">qr_code_2</span> คิวอาร์โค้ดประจำตัว</div><div class="qs">แสดง QR นี้ให้เจ้าหน้าที่เพื่อรับคะแนน</div><div class="qw" id="pqr"></div><div class="nt"><span class="material-symbols-rounded" style="font-size:14px">info</span> ใช้สำหรับสะสมแต้มเฉพาะที่ CMU Library</div></div>
+</div>
+
+<div class="dw"><nav class="dk">
+  <button class="nv" data-page="missions"><span class="material-symbols-rounded ni">task_alt</span><span class="nl">ภารกิจ</span></button>
+  <button class="nv" data-page="history"><span class="material-symbols-rounded ni">history</span><span class="nl">ประวัติ</span></button>
+  <button class="nv ct active" data-page="leaderboard"><span class="material-symbols-rounded ni">social_leaderboard</span><span class="nl">อันดับ</span></button>
+  <button class="nv" data-page="rewards"><span class="material-symbols-rounded ni">card_giftcard</span><span class="nl">รางวัล</span></button>
+  <button class="nv" data-page="profile"><span class="material-symbols-rounded ni">person</span><span class="nl">โปรไฟล์</span></button>
+</nav></div>
+
+<div class="ov" id="qrp"><div class="mdl"><button class="xb" onclick="hov('qrp')"><span class="material-symbols-rounded">close</span></button><div style="color:var(--pri);margin-bottom:6px"><span class="material-symbols-rounded" style="font-size:44px">qr_code_scanner</span></div><div class="mt2">สแกนรับคะแนน</div><div class="ms">แสดงคิวอาร์โค้ดนี้ให้เจ้าหน้าที่</div><div class="mqr" id="pqr2"></div><div class="mn gn">ธนศรัณกร พิชญนันทกุล</div><div class="mi">รหัสสมาชิก: LIB6701234567</div><div class="mnt"><span class="material-symbols-rounded" style="font-size:13px;vertical-align:middle;margin-right:3px">security</span> QR อัปเดตอัตโนมัติเพื่อความปลอดภัย</div></div></div>
+
+<div class="ov" id="mpp"><div class="mdl" style="padding:22px 18px"><button class="xb" onclick="hov('mpp')"><span class="material-symbols-rounded">close</span></button><div style="color:var(--pri);margin-bottom:2px"><span class="material-symbols-rounded" style="font-size:30px">explore</span></div><div class="mt2" style="font-size:16px">จุดปฏิบัติภารกิจ</div><div class="ms" id="mpt">ชื่อภารกิจ</div><div class="lcc"><div class="li"><span class="material-symbols-rounded" style="color:var(--pri)">domain</span></div><div style="flex:1"><div class="ln" id="mpd">—</div><div class="ld" id="mpds">กำลังค้นหา GPS...</div></div></div><div id="mm"></div><div class="mbs"><button class="mb sec" onclick="onav()"><span class="material-symbols-rounded">navigation</span> นำทาง</button><button class="mb pri" onclick="cmpl()"><span class="material-symbols-rounded">qr_code_scanner</span> สแกนเช็คอิน</button></div></div></div>
+
+<div class="ov" id="edp"><div class="mdl" style="text-align:left"><button class="xb" onclick="hov('edp')"><span class="material-symbols-rounded">close</span></button><div class="mt2" style="text-align:center;margin-bottom:16px">แก้ไขโปรไฟล์</div><div class="ef"><label>ชื่อ-นามสกุล</label><input type="text" id="en"></div><div class="ef"><label>คณะ / สังกัด</label><input type="text" id="efc"></div><div class="ef"><label>อีเมล</label><input type="email" id="ee"></div><button class="svb" onclick="svp()">บันทึกข้อมูล</button></div></div>
+
+<div class="np" id="npp"><div class="nh"><h2>การแจ้งเตือน</h2><button class="ib" onclick="document.getElementById('npp').classList.remove('show')" style="position:static"><span class="material-symbols-rounded">close</span></button></div><div class="nls">
+  <div class="ni2 ur"><div class="nc" style="background:var(--gold-light);color:var(--gold)"><span class="material-symbols-rounded" style="font-size:18px">celebration</span></div><div><div class="nt2">งานสัปดาห์ห้องสมุดเริ่มแล้ว!</div><div class="nd">เข้าร่วมกิจกรรมพิเศษรับ 500 แต้ม</div><div class="ntm">2 ชม. ที่แล้ว</div></div></div>
+  <div class="ni2 ur"><div class="nc" style="background:var(--green-bg);color:var(--green)"><span class="material-symbols-rounded" style="font-size:18px">trending_up</span></div><div><div class="nt2">อันดับคุณขยับขึ้น!</div><div class="nd">คุณขยับจากอันดับ 14 → 12</div><div class="ntm">5 ชม. ที่แล้ว</div></div></div>
+  <div class="ni2"><div class="nc" style="background:var(--pri-50);color:var(--pri)"><span class="material-symbols-rounded" style="font-size:18px">new_releases</span></div><div><div class="nt2">ภารกิจใหม่ประจำสัปดาห์</div><div class="nd">อ่านหนังสือ 3 เล่ม รับ 200 แต้ม</div><div class="ntm">เมื่อวาน</div></div></div>
+  <div class="ni2"><div class="nc" style="background:var(--amber-bg);color:var(--amber)"><span class="material-symbols-rounded" style="font-size:18px">local_cafe</span></div><div><div class="nt2">คูปองเครื่องดื่มใกล้หมด</div><div class="nd">เหลือเพียง 15 สิทธิ์สุดท้าย</div><div class="ntm">3 วันที่แล้ว</div></div></div>
+</div></div>
+
+</div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// Smooth Navigation Logic
-const navItems = document.querySelectorAll('.dock-item');
-const pages = document.querySelectorAll('.page');
+const S={pts:2560,vis:28,nm:'ธนศรัณกร พิชญนันทกุล',fac:'บริหารธุรกิจ (MBA)',em:'thanasarankorn.p@cmu.ac.th'};
+const fmt=n=>n.toLocaleString('en-US');
 
-navItems.forEach(item => {
-  item.addEventListener('click', () => {
-    const target = item.dataset.page;
-    if (!target) return;
-    
-    // Update active nav
-    navItems.forEach(n => n.classList.remove('active'));
-    item.classList.add('active');
-    
-    // Update active page with animation
-    pages.forEach(p => {
-      p.classList.remove('active');
-      if (p.id === 'page-' + target) {
-        // Force reflow for animation restart
-        void p.offsetWidth;
-        p.classList.add('active');
-      }
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-});
+// Tier System Calc
+function getTier(p) {
+  if(p >= 5000) return {n:'Platinum', bg:'linear-gradient(135deg,#94A3B8,#475569)', c:'#fff'};
+  if(p >= 2000) return {n:'Gold', bg:'linear-gradient(135deg,#FDE68A,#D4A147)', c:'var(--pri-700)'};
+  if(p >= 500) return {n:'Silver', bg:'linear-gradient(135deg,#E2E8F0,#94A3B8)', c:'#000'};
+  return {n:'Bronze', bg:'linear-gradient(135deg,#FCD34D,#B45309)', c:'#fff'};
+}
 
-// Generate QR
-function generateQR() {
-  const el = document.getElementById('profile-qr');
-  if (!el || el.querySelector('canvas')) return;
-  new QRCode(el, {
-    text: "CMU-ACT-IRINLADA-9999999999",
-    width: 180,
-    height: 180,
-    colorDark: "#37104D",
-    colorLight: "#FFFFFF",
-    correctLevel: QRCode.CorrectLevel.H
+function sync(){
+  const t = getTier(S.pts);
+  document.querySelectorAll('.gp').forEach(e=>e.textContent=fmt(S.pts));
+  document.querySelectorAll('.gn').forEach(e=>e.innerHTML=`${S.nm}`);
+  document.querySelectorAll('.gns').forEach(e=>e.textContent=S.nm.split(' ')[0]);
+  document.querySelectorAll('.gf').forEach(e=>e.textContent=S.fac);
+  document.querySelectorAll('.ge').forEach(e=>e.textContent=S.em);
+  document.querySelectorAll('.gv').forEach(e=>e.innerHTML=`${S.vis} <span class="u">ครั้ง</span>`);
+  document.querySelectorAll('.tb-display').forEach(e=>{e.textContent=t.n; e.style.background=t.bg; e.style.color=t.c;});
+  
+  document.querySelectorAll('.rdb').forEach(b=>{
+    if(b.classList.contains('ok'))return;
+    const c=+b.dataset.cost;
+    if(S.pts>=c){b.className='rdb can';b.textContent=`แลก ${fmt(c)} แต้ม`;b.disabled=false}
+    else{b.className='rdb cant';b.textContent=`แต้มไม่พอ (ต้องใช้ ${fmt(c)})`;b.disabled=true}
   });
 }
 
-window.addEventListener('load', generateQR);
-</script>
+function fireConfetti() {
+  const colors = ['#5A1E7A', '#F5A623', '#22C55E', '#3B82F6', '#EF4444'];
+  for(let i=0; i<40; i++) {
+    let c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.top = '-10vh';
+    c.style.animation = `confettiFall ${Math.random() * 2 + 2}s linear forwards`;
+    c.style.animationDelay = (Math.random() * 0.5) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
 
+function toast(m,t='ok'){const b=document.getElementById('tb'),e=document.createElement('div');e.className=`toast ${t==='err'?'err':t==='warn'?'warn':''}`;const i=t==='err'?'error':t==='warn'?'warning':'check_circle',ic=t==='err'?'er':t==='warn'?'wa':'ok';e.innerHTML=`<span class="material-symbols-rounded ti ${ic}">${i}</span><div class="tm">${m}</div><span class="material-symbols-rounded tc" onclick="this.parentElement.remove()">close</span>`;b.appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transform='translateY(-10px)';e.style.transition='all .3s';setTimeout(()=>e.remove(),300)},3500)}
+
+function ptsa(p){const e=document.createElement('div');e.className='pts-anim';e.textContent=`${p>0?'+':''}${p}`;document.body.appendChild(e);setTimeout(()=>e.remove(),1500)}
+
+// Sticky Header effect
+document.querySelectorAll('.app').forEach(app => {
+  window.addEventListener('scroll', () => {
+    document.querySelectorAll('.hdr').forEach(h => {
+      if(window.scrollY > 10) h.classList.add('scrolled');
+      else h.classList.remove('scrolled');
+    });
+  });
+});
+
+// Nav
+document.querySelectorAll('.dk .nv').forEach(b=>{b.addEventListener('click',()=>{const pg=b.dataset.page;document.querySelectorAll('.dk .nv').forEach(n=>n.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');if(p.id==='page-'+pg)p.classList.add('active')});window.scrollTo({top:0,behavior:'smooth'})})});
+
+// Mission tabs
+const tids={daily:'tab-daily',weekly:'tab-weekly',special:'tab-special',done:'tab-done'};
+document.querySelectorAll('.mtb').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.mtb').forEach(x=>x.classList.remove('active'));t.classList.add('active');Object.values(tids).forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById(tids[t.dataset.tab]).classList.remove('hidden')})});
+
+// History filter
+document.querySelectorAll('.hfb').forEach(f=>{f.addEventListener('click',()=>{document.querySelectorAll('.hfb').forEach(x=>x.classList.remove('active'));f.classList.add('active');const fl=f.dataset.f;document.querySelectorAll('#hl .hi').forEach(i=>{if(fl==='all')i.style.display='';else if(fl==='today')i.style.display=i.dataset.dy==='11'?'':'none';else i.style.display=''});document.querySelectorAll('#hl .hd').forEach(h=>{if(fl==='all')h.style.display='';else if(fl==='today')h.style.display=h.dataset.date==='11'?'':'none';else h.style.display=''})})});
+
+// Noti
+document.querySelectorAll('.bn').forEach(b=>{b.addEventListener('click',()=>{document.getElementById('npp').classList.toggle('show')})});
+
+// Overlays
+function sov(id){document.getElementById(id).classList.add('show');document.body.style.overflow='hidden'}
+function hov(id){document.getElementById(id).classList.remove('show');document.body.style.overflow=''}
+document.querySelectorAll('.ov').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)hov(o.id)})});
+
+// QR
+function mkqr(id){const el=document.getElementById(id);if(!el||el.querySelector('canvas'))return;new QRCode(el,{text:"CMU-LIB-6701234567",width:150,height:150,colorDark:"#18181B",colorLight:"#FFFFFF",correctLevel:QRCode.CorrectLevel.H})}
+function showQR(){sov('qrp');setTimeout(()=>mkqr('pqr2'),100)}
+
+// Map
+let map=null,uM=null,dM=null,rL=null,cBtn=null,cLat=null,cLng=null;
+document.querySelectorAll('.dm').forEach(b=>{b.addEventListener('click',function(){if(this.classList.contains('dn'))return;cBtn=this;cLat=+this.dataset.lat;cLng=+this.dataset.lng;document.getElementById('mpt').textContent=this.dataset.title;document.getElementById('mpd').textContent=this.dataset.dest;document.getElementById('mpds').textContent='กำลังค้นหา GPS...';sov('mpp');imap(cLat,cLng,this.dataset.poi)})});
+
+function imap(dL,dN,poi){
+  if(!map){map=L.map('mm',{zoomControl:false}).setView([dL,dN],16);L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map)}else{map.setView([dL,dN],16)}
+  setTimeout(()=>map.invalidateSize(),200);
+  const di=L.divIcon({className:'',html:`<div class="dest-pin"><div class="dest-pin-inner"><span class="material-symbols-rounded" style="font-size:16px">domain</span></div></div>`,iconSize:[32,32],iconAnchor:[16,32]});
+  if(dM)map.removeLayer(dM);dM=L.marker([dL,dN],{icon:di}).addTo(map);
+  if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{const uL=p.coords.latitude,uN2=p.coords.longitude;const ui=L.divIcon({className:'',html:`<div class="user-pin"></div>`,iconSize:[14,14],iconAnchor:[7,7]});if(uM)map.removeLayer(uM);uM=L.marker([uL,uN2],{icon:ui}).addTo(map);if(rL)map.removeLayer(rL);rL=L.polyline([[uL,uN2],[dL,dN]],{color:'#4A1270',weight:3,dashArray:'6,8'}).addTo(map);map.fitBounds([[uL,uN2],[dL,dN]],{padding:[25,25]});const d=map.distance([uL,uN2],[dL,dN]);document.getElementById('mpds').textContent=`${poi} (ห่าง ${d>1000?(d/1000).toFixed(1)+' กม.':Math.round(d)+' ม.'})`;},()=>{document.getElementById('mpds').textContent=`${poi} (ไม่สามารถดึง GPS)`;},{enableHighAccuracy:true})}
+}
+
+function onav(){if(cLat)window.open(`https://www.google.com/maps/dir/?api=1&destination=${cLat},${cLng}`,'_blank')}
+
+function cmpl(){
+  if(!cBtn)return;const pts=+cBtn.dataset.pts,t=cBtn.dataset.title,d=cBtn.dataset.dest;
+  S.pts+=pts;S.vis++;
+  const card=cBtn.closest('.mc');card.classList.add('done-c');
+  const fl=card.querySelector('.fl');if(fl)fl.style.width='100%';
+  const pt=card.querySelector('.pt');if(pt)pt.textContent='1/1';
+  cBtn.className='ab dn';cBtn.innerHTML='<span class="material-symbols-rounded" style="font-size:13px">check</span> สำเร็จแล้ว';
+  document.getElementById('dl').insertAdjacentHTML('afterbegin',card.outerHTML);
+  addH(t,pts,`เช็คอิน: ${d}`);sync();hov('mpp');
+  setTimeout(()=>{ptsa(pts);fireConfetti();toast(`ได้รับ ${pts} แต้ม จาก ${t}`)},300);
+}
+
+// Digital missions
+document.querySelectorAll('.dd').forEach(b=>{b.addEventListener('click',function(){if(this.classList.contains('dn'))return;const pts=+this.dataset.pts,t=this.dataset.title;S.pts+=pts;S.vis++;const card=this.closest('.mc');card.classList.add('done-c');const fl=card.querySelector('.fl');if(fl)fl.style.width='100%';const pt=card.querySelector('.pt');if(pt)pt.textContent='1/1';this.className='ab dn';this.innerHTML='<span class="material-symbols-rounded" style="font-size:13px">check</span> สำเร็จแล้ว';document.getElementById('dl').insertAdjacentHTML('afterbegin',card.outerHTML);addH(t,pts,'ระบบออนไลน์');sync();ptsa(pts);fireConfetti();toast(`ได้รับ ${pts} แต้ม จาก ${t}`)})});
+
+function addH(t,pts,tag){const n=new Date(),tm=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`,h=`<div class="hi" data-dy="11" style="animation:slideUp .3s var(--ease) both"><div class="tm"><span class="material-symbols-rounded">${pts>0?'pin_drop':'redeem'}</span><div class="tx">${tm}</div></div><div class="hc"><span class="material-symbols-rounded">${pts>0?'check_circle':'shopping_bag'}</span></div><div class="inf"><div class="pl">${t}</div><div class="lc">ดำเนินการเรียบร้อย</div><div class="tg">${tag}</div></div><div class="ps"><div class="v ${pts<0?'ng':''}">${pts>0?'+':''}${fmt(pts)}</div></div></div>`;const fh=document.querySelector('#hl .hd');if(fh)fh.insertAdjacentHTML('afterend',h)}
+
+// Rewards
+document.querySelectorAll('.rdb').forEach(b=>{b.addEventListener('click',function(){if(this.classList.contains('cant')||this.classList.contains('ok'))return;const c=+this.dataset.cost,it=this.dataset.item;if(S.pts<c){toast('แต้มไม่เพียงพอ','err');return}if(!confirm(`ยืนยันแลก "${it}" ใช้ ${fmt(c)} แต้ม?`))return;S.pts-=c;if(this.dataset.sid){const se=document.getElementById(this.dataset.sid);if(se)se.textContent=Math.max(0,+se.textContent-1)}this.className='rdb ok';this.textContent='✓ แลกสำเร็จแล้ว';addH(`แลกรางวัล: ${it}`,-c,'แลกคูปอง');sync();ptsa(-c);fireConfetti();setTimeout(()=>toast(`แลก "${it}" สำเร็จ!`),400)})});
+
+// Edit profile
+document.getElementById('bed').addEventListener('click',()=>{document.getElementById('en').value=S.nm;document.getElementById('efc').value=S.fac;document.getElementById('ee').value=S.em;sov('edp')});
+document.getElementById('bst').addEventListener('click',()=>{document.getElementById('en').value=S.nm;document.getElementById('efc').value=S.fac;document.getElementById('ee').value=S.em;sov('edp')});
+function svp(){const n=document.getElementById('en').value.trim(),f=document.getElementById('efc').value.trim(),e=document.getElementById('ee').value.trim();if(!n){toast('กรุณากรอกชื่อ','err');return}S.nm=n;S.fac=f;S.em=e;sync();hov('edp');toast('อัปเดตโปรไฟล์เรียบร้อย')}
+
+// Timer
+function tick(){const n=new Date(),e=new Date(n);e.setHours(24,0,0,0);const d=e-n,h=String(Math.floor(d/3600000)).padStart(2,'0'),m=String(Math.floor((d%3600000)/60000)).padStart(2,'0'),s=String(Math.floor((d%60000)/1000)).padStart(2,'0');const el=document.getElementById('tmr');if(el)el.textContent=`${h}:${m}:${s}`}
+setInterval(tick,1000);tick();
+
+window.addEventListener('load',()=>{mkqr('pqr');sync()});
+</script>
 </body>
 </html>
